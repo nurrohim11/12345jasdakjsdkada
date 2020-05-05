@@ -28,7 +28,13 @@ import androidx.leanback.widget.VerticalGridPresenter;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -86,7 +92,11 @@ public class MainFragment extends BrowseFragment {
     private static final long MENU_ID_3 = 3;
     private static final String MENU_NAME_3 = "IP TV";
     private static final long MENU_ID_4 = 4;
-    private static final String MENU_NAME_4 = "My Favorite";
+    private static final String MENU_NAME_4 = "Favorite";
+    private static final long MENU_ID_5 = 5;
+    private static final String MENU_NAME_5 = "Billing";
+    private static final long MENU_ID_6 = 6;
+    private static final String MENU_NAME_6 = "Inbox";
     String device_token="";
     SessionManager sessionManager;
 
@@ -264,6 +274,14 @@ public class MainFragment extends BrowseFragment {
         HeaderItem headerItem4 = new HeaderItem(MENU_ID_4, MENU_NAME_4);
         PageRow pageRow4 = new PageRow(headerItem4);
         mRowsAdapter.add(pageRow4);
+
+        HeaderItem headerItem5 = new HeaderItem(MENU_ID_4, MENU_NAME_5);
+        PageRow pageRow5 = new PageRow(headerItem5);
+        mRowsAdapter.add(pageRow5);
+
+        HeaderItem headerItem6 = new HeaderItem(MENU_ID_6, MENU_NAME_6);
+        PageRow pageRow6 = new PageRow(headerItem6);
+        mRowsAdapter.add(pageRow6);
     }
 
     private static class MainFragmentFactory extends BrowseFragment.FragmentFactory {
@@ -286,6 +304,13 @@ public class MainFragment extends BrowseFragment {
             }
             else if (row.getHeaderItem().getId() == MENU_ID_4) {
                 return new FavoriteFragment();
+            }
+
+            else if(row.getHeaderItem().getId() == MENU_ID_5){
+                return new WebViewFragment();
+            }
+            else if(row.getHeaderItem().getId() == MENU_ID_6){
+                return new InboxFragment();
             }
 
             throw new IllegalArgumentException(String.format("Invalid row %s", rowObj));
@@ -350,7 +375,7 @@ public class MainFragment extends BrowseFragment {
                                 Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
                                 getContext().startActivity( launchIntent );
                             }else{
-                                Toast.makeText(getActivity(), "Maaf, Fiber tv tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
@@ -554,8 +579,17 @@ public class MainFragment extends BrowseFragment {
                         Object item,
                         RowPresenter.ViewHolder rowViewHolder,
                         Row row) {
-                    Toast.makeText(getActivity(), "Implement click handler", Toast.LENGTH_SHORT)
-                            .show();
+                    if(item instanceof ChannelModel){
+                        ChannelModel model = (ChannelModel) item;
+
+                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                        if(installedPackages.contains(model.getLink())){
+                            Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
+                            getContext().startActivity( launchIntent );
+                        }else{
+                            Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 }
             });
         }
@@ -727,4 +761,85 @@ public class MainFragment extends BrowseFragment {
             );
         }
     }
+
+    // TODO BILLING FRAGMENT
+    public static class BillingFragment extends GridFragment {
+        public BillingFragment() {
+            // Required empty public constructor
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            TextView textView = new TextView(getActivity());
+            textView.setText(R.string.hello_blank_fragment);
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+            return textView;
+        }
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+    }
+
+    // TODO INBOX FRAGMENT
+    public static class InboxFragment extends GridFragment {
+        public InboxFragment() {
+            // Required empty public constructor
+        }
+
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            TextView textView = new TextView(getActivity());
+            textView.setText(R.string.hello_blank_fragment);
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+            return textView;
+        }
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+    }
+
+    public static class WebViewFragment extends Fragment implements MainFragmentAdapterProvider {
+        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+        private WebView mWebview;
+
+        @Override
+        public MainFragmentAdapter getMainFragmentAdapter() {
+            return mMainFragmentAdapter;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            FrameLayout root = new FrameLayout(getActivity());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT);
+            lp.setMarginStart(32);
+            mWebview = new WebView(getActivity());
+            mWebview.setWebViewClient(new WebViewClient());
+            mWebview.getSettings().setJavaScriptEnabled(true);
+            root.addView(mWebview, lp);
+            return root;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            mWebview.loadUrl("https://www.google.com/policies/terms");
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+        }
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.fiberstream.tv.app.streaming.detail;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -26,12 +27,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.fiberstream.tv.R;
+import com.fiberstream.tv.app.favorite.model.FavoriteModel;
 import com.fiberstream.tv.app.streaming.detail.presenter.CardDetailKategoriPresenter;
 import com.fiberstream.tv.app.streaming.detail.presenter.DetailKategoriPresenter;
 import com.fiberstream.tv.app.streaming.model.KategoriModel;
@@ -40,6 +43,7 @@ import com.fiberstream.tv.app.streaming.presenters.CardPresenterSelector;
 import com.fiberstream.tv.app.tv.model.ChannelRowModel;
 import com.fiberstream.tv.utils.PicassoBackgroundManager;
 import com.fiberstream.tv.utils.ServerURL;
+import com.fiberstream.tv.utils.Utils;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -80,12 +84,43 @@ public class DetailKategoriFragment extends VerticalGridFragment {
         prepareBackgroundManager();
         mBackgroundURI = Uri.parse(kategoriModel.getBgImageUrl());
         startBackgroundTimer();
-                setTitle("Kategori "+kategoriModel.getNama());
+                setTitle("Movie categories "+kategoriModel.getNama());
         setupRowAdapter();
         setOnItemViewClickedListener(new OnItemViewClickedListener() {
             @Override
             public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
+                if(item instanceof StreamingModel){
+                    final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
 
+                    if(installedPackages.contains(((StreamingModel) item).getJsonPackage())){
+                        Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((StreamingModel) item).getJsonPackage());
+                        getContext().startActivity( launchIntent );
+                    }else {
+                        if(((StreamingModel) item).getJsonPackage().isEmpty()){
+                            if(((StreamingModel) item).getUrlPlaystore().isEmpty()){
+                                if(((StreamingModel) item).getUrlWeb().isEmpty()){
+                                    Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Intent httpIntent = new Intent(Intent.ACTION_VIEW);
+                                    httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
+                                    getContext().startActivity(httpIntent);
+                                }
+                            }else{
+                                try {
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((StreamingModel) item).getJsonPackage())));
+                                } catch (android.content.ActivityNotFoundException anfe) {
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((StreamingModel) item).getJsonPackage())));
+                                }
+                            }
+                        }else{
+                            try {
+                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((StreamingModel) item).getJsonPackage())));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((StreamingModel) item).getJsonPackage())));
+                            }
+                        }
+                    }
+                }
             }
         });
     }
@@ -123,6 +158,7 @@ public class DetailKategoriFragment extends VerticalGridFragment {
     private void loadKontenStreaming(){
         JSONObject obj = new JSONObject();
         try {
+            obj.put("device","tv");
             obj.put("type","");
             obj.put("kategori",kategoriModel.getId());
         } catch (JSONException e) {
