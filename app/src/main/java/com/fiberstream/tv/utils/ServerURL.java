@@ -5,8 +5,8 @@ package com.fiberstream.tv.utils;
  */
 
 public class ServerURL {
-    private static String base_url ="http://gmedia.bz/zigystreaming/api/";
-    private static String home_url ="http://gmedia.bz/zigystreaming/";
+    private static String base_url ="https://admin.fiberstream.id/api/";
+    private static String home_url ="https://admin.fiberstream.id/";
     public static String get_dashbord_apps = base_url+"main/dashboard";
     public static String get_kategori = base_url+"master/ms_kategori";
     public static String get_konten_streaming = base_url+"master/konten_streaming";

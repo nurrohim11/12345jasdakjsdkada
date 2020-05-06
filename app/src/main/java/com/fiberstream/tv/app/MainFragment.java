@@ -231,7 +231,8 @@ public class MainFragment extends BrowseFragment {
         setHeadersState(HEADERS_ENABLED);
         setHeadersTransitionOnBackEnabled(true);
         setBrandColor(getResources().getColor(R.color.fastlane_background));
-        setTitle("Fiberstream");
+//        setTitle("Fiberstream");
+        setBadgeDrawable(getResources().getDrawable(R.drawable.logo_fiber, null));
         // Set search icon color.
         setSearchAffordanceColor(ContextCompat.getColor(getActivity(), R.color.search_opaque));
         setOnSearchClickedListener(new View.OnClickListener() {
@@ -275,7 +276,7 @@ public class MainFragment extends BrowseFragment {
         PageRow pageRow4 = new PageRow(headerItem4);
         mRowsAdapter.add(pageRow4);
 
-        HeaderItem headerItem5 = new HeaderItem(MENU_ID_4, MENU_NAME_5);
+        HeaderItem headerItem5 = new HeaderItem(MENU_ID_5, MENU_NAME_5);
         PageRow pageRow5 = new PageRow(headerItem5);
         mRowsAdapter.add(pageRow5);
 
@@ -305,9 +306,8 @@ public class MainFragment extends BrowseFragment {
             else if (row.getHeaderItem().getId() == MENU_ID_4) {
                 return new FavoriteFragment();
             }
-
             else if(row.getHeaderItem().getId() == MENU_ID_5){
-                return new WebViewFragment();
+                return new BillingFragment();
             }
             else if(row.getHeaderItem().getId() == MENU_ID_6){
                 return new InboxFragment();
@@ -763,48 +763,7 @@ public class MainFragment extends BrowseFragment {
     }
 
     // TODO BILLING FRAGMENT
-    public static class BillingFragment extends GridFragment {
-        public BillingFragment() {
-            // Required empty public constructor
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            TextView textView = new TextView(getActivity());
-            textView.setText(R.string.hello_blank_fragment);
-            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
-            return textView;
-        }
-        @Override
-        public void onCreate(@Nullable Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
-    }
-
-    // TODO INBOX FRAGMENT
-    public static class InboxFragment extends GridFragment {
-        public InboxFragment() {
-            // Required empty public constructor
-        }
-
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            TextView textView = new TextView(getActivity());
-            textView.setText(R.string.hello_blank_fragment);
-            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
-            return textView;
-        }
-
-        @Override
-        public void onCreate(@Nullable Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
-    }
-
-    public static class WebViewFragment extends Fragment implements MainFragmentAdapterProvider {
+    public static class BillingFragment extends Fragment implements MainFragmentAdapterProvider {
         private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
         private WebView mWebview;
 
@@ -837,7 +796,47 @@ public class MainFragment extends BrowseFragment {
         @Override
         public void onResume() {
             super.onResume();
-            mWebview.loadUrl("https://www.google.com/policies/terms");
+            mWebview.loadUrl("https://fiberstream.id/invoice.php");
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+        }
+    }
+
+
+    // TODO INBOX FRAGMENT
+    public static class InboxFragment extends Fragment implements MainFragmentAdapterProvider {
+        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+        private WebView mWebview;
+
+        @Override
+        public MainFragmentAdapter getMainFragmentAdapter() {
+            return mMainFragmentAdapter;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            FrameLayout root = new FrameLayout(getActivity());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT);
+            lp.setMarginStart(32);
+            mWebview = new WebView(getActivity());
+            mWebview.setWebViewClient(new WebViewClient());
+            mWebview.getSettings().setJavaScriptEnabled(true);
+            root.addView(mWebview, lp);
+            return root;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            mWebview.loadUrl("https://fiberstream.id/inbox.php");
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
         }
     }

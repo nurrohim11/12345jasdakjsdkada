@@ -43,10 +43,12 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.fiberstream.tv.BuildConfig;
-import com.fiberstream.tv.CardPresenter;
 import com.fiberstream.tv.DetailsActivity;
 import com.fiberstream.tv.R;
 import com.fiberstream.tv.app.MainFragment;
+import com.fiberstream.tv.app.main.model.DataModel;
+import com.fiberstream.tv.app.search.presenter.CardSearchPresenter;
+import com.fiberstream.tv.app.streaming.detail.DetailKategoriFragment;
 import com.fiberstream.tv.utils.ServerURL;
 import com.fiberstream.tv.utils.Utils;
 
@@ -82,11 +84,23 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
     private String mQuery;
     private List<KontenStreaming> streaming = new ArrayList<>();
 
+
+    private final Handler handler = new Handler();
+    private Drawable mDefaultBackground;
+    private DisplayMetrics mMetrics;
+    private Uri mBackgroundURI;
+    private Runnable mBackgroundTask;
+    private BackgroundManager mBackgroundManager;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+
+        prepareBackgroundManager();
+        mBackgroundURI = Uri.parse(ServerURL.get_background);
+        startBackgroundTimer();
 
         setSearchResultProvider(this);
         setOnItemViewClickedListener(new ItemViewClickedListener());
@@ -110,6 +124,12 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
 
     public boolean hasResults() {
         return mRowsAdapter.size() > 0;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startBackgroundTimer();
     }
 
     @Override
@@ -173,7 +193,12 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
     private void getDataStream(){
 
         JSONObject jBody = new JSONObject();
-        new ApiVolley(getActivity(), jBody, "POST", ServerURL.get_konten_streaming,
+        try {
+            jBody.put("device","tv");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        new ApiVolley(getActivity(), jBody, "POST", ServerURL.get_all_konten,
                 new AppRequestCallback(new AppRequestCallback.ResponseListener() {
                     @Override
                     public void onSuccess(String response, String message) {
@@ -241,7 +266,7 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
                     }
                 }
 
-                ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter());
+                ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardSearchPresenter());
                 listRowAdapter.addAll(0, result);
                 HeaderItem header = new HeaderItem("Search Results");
                 return new ListRow(header, listRowAdapter);
@@ -260,10 +285,98 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
                                   RowPresenter.ViewHolder rowViewHolder, Row row) {
 
             if (item instanceof KontenStreaming) {
+                KontenStreaming movie = (KontenStreaming) item;
+                if(movie.getFlag().equals("0")){
+                    final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                    if(installedPackages.contains(movie.getLink())){
+                        Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(movie.getLink());
+                        getContext().startActivity( launchIntent );
+                    }else{
+                        Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
+                    }
+                }else{
+                    final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+
+                    if(installedPackages.contains(movie.getJsonMemberPackage())){
+                        Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(movie.getJsonMemberPackage());
+                        getContext().startActivity( launchIntent );
+                    }else {
+                        if(movie.getJsonMemberPackage().isEmpty()){
+                            if(movie.getUrlPlaystore().isEmpty()){
+                                if(movie.getUrlWeb().isEmpty()){
+                                    Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Intent httpIntent = new Intent(Intent.ACTION_VIEW);
+                                    httpIntent.setData(Uri.parse(movie.getUrlWeb()));
+                                    getContext().startActivity(httpIntent);
+                                }
+                            }else{
+                                try {
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+(movie.getJsonMemberPackage()))));
+                                } catch (android.content.ActivityNotFoundException anfe) {
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+movie.getJsonMemberPackage())));
+                                }
+                            }
+                        }else{
+                            try {
+                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+movie.getJsonMemberPackage())));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+movie.getJsonMemberPackage())));
+                            }
+                        }
+                    }
+                }
             } else {
                 Toast.makeText(getActivity(), ((String) item), Toast.LENGTH_SHORT)
                         .show();
             }
         }
     }
+
+    private void prepareBackgroundManager() {
+        mBackgroundManager = BackgroundManager.getInstance(getActivity());
+        mBackgroundManager.attach(getActivity().getWindow());
+        mDefaultBackground = getResources().getDrawable(R.drawable.default_background, null);
+        mBackgroundTask = new UpdateBackgroundTask();
+        mMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
+    }
+
+    private class UpdateBackgroundTask implements Runnable {
+
+        @Override
+        public void run() {
+            if (mBackgroundURI != null) {
+                updateBackground(mBackgroundURI.toString());
+            }
+        }
+    }
+
+    private void updateBackground(String uri) {
+        int width = mMetrics.widthPixels;
+        int height = mMetrics.heightPixels;
+
+        RequestOptions options = new RequestOptions()
+                .centerCrop()
+                .error(mDefaultBackground);
+
+        Glide.with(getContext())
+                .asBitmap()
+                .load(uri)
+                .apply(options)
+                .into(new SimpleTarget<Bitmap>(width, height) {
+                    @Override
+                    public void onResourceReady(
+                            Bitmap resource,
+                            Transition<? super Bitmap> transition) {
+                        mBackgroundManager.setBitmap(resource);
+                    }
+                });
+    }
+
+    private void startBackgroundTimer() {
+        handler.removeCallbacks(mBackgroundTask);
+        handler.postDelayed(mBackgroundTask, BACKGROUND_UPDATE_DELAY);
+    }
+
 }

@@ -84,7 +84,7 @@ public class DetailKategoriFragment extends VerticalGridFragment {
         prepareBackgroundManager();
         mBackgroundURI = Uri.parse(kategoriModel.getBgImageUrl());
         startBackgroundTimer();
-                setTitle("Movie categories "+kategoriModel.getNama());
+                setTitle(kategoriModel.getNama()+" Category");
         setupRowAdapter();
         setOnItemViewClickedListener(new OnItemViewClickedListener() {
             @Override

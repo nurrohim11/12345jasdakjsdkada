@@ -15,8 +15,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
-    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+<!--    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />-->
+<!--    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />-->
 
     <application
         android:allowBackup="true"
@@ -27,7 +27,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity android:name=".app.search.SearchActivity"
-            android:screenOrientation="landscape"></activity>
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".app.streaming.detail.DetailKategoriActivity"
             android:screenOrientation="landscape" />
