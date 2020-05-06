@@ -1,4 +1,4 @@
-package com.fiberstream.tv.app.page;
+package com.fiberstream.tv.app.settings.presenter;
 
 import android.content.Context;
 import android.view.View;
@@ -6,12 +6,8 @@ import android.view.View;
 import androidx.leanback.widget.ImageCardView;
 
 import com.fiberstream.tv.R;
-import com.fiberstream.tv.app.streaming.presenters.ImageCardViewPresenter;
 
-/**
- * Simple presenter implementation to represent settings icon as cards.
- */
-public class SettingsIconPresenter extends ImageCardViewPresenter {
+public class SettingsIconPresenter extends ImageSettingsViewPresenter {
 
     public SettingsIconPresenter(Context context) {
         super(context, R.style.IconCardTheme);

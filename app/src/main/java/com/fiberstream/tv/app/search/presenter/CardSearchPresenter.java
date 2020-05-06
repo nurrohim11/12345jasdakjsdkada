@@ -9,7 +9,6 @@ import androidx.leanback.widget.ImageCardView;
 import androidx.leanback.widget.Presenter;
 
 import com.bumptech.glide.Glide;
-import com.fiberstream.tv.Movie;
 import com.fiberstream.tv.R;
 import com.fiberstream.tv.app.search.KontenStreaming;
 

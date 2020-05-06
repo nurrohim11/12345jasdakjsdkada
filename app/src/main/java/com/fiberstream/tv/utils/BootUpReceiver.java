@@ -3,7 +3,10 @@ package com.fiberstream.tv.utils;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
+import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.app.MainActivity;
 
 public class BootUpReceiver extends BroadcastReceiver {

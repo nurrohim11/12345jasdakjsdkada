@@ -89,34 +89,38 @@ public class DetailKategoriFragment extends VerticalGridFragment {
         setOnItemViewClickedListener(new OnItemViewClickedListener() {
             @Override
             public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-                if(item instanceof StreamingModel){
-                    final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                if(item instanceof StreamingModel) {
+                    if (((StreamingModel) item).getUrlWeb().equals("0")) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/channel/UCI5F5g_NNcKAQUn7umV9zxA")));
+                    } else {
+                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
 
-                    if(installedPackages.contains(((StreamingModel) item).getJsonPackage())){
-                        Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((StreamingModel) item).getJsonPackage());
-                        getContext().startActivity( launchIntent );
-                    }else {
-                        if(((StreamingModel) item).getJsonPackage().isEmpty()){
-                            if(((StreamingModel) item).getUrlPlaystore().isEmpty()){
-                                if(((StreamingModel) item).getUrlWeb().isEmpty()){
-                                    Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
-                                }else{
-                                    Intent httpIntent = new Intent(Intent.ACTION_VIEW);
-                                    httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
-                                    getContext().startActivity(httpIntent);
+                        if (installedPackages.contains(((StreamingModel) item).getJsonPackage())) {
+                            Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((StreamingModel) item).getJsonPackage());
+                            getContext().startActivity(launchIntent);
+                        } else {
+                            if (((StreamingModel) item).getJsonPackage().isEmpty()) {
+                                if (((StreamingModel) item).getUrlPlaystore().isEmpty()) {
+                                    if (((StreamingModel) item).getUrlWeb().isEmpty()) {
+                                        Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Intent httpIntent = new Intent(Intent.ACTION_VIEW);
+                                        httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
+                                        getContext().startActivity(httpIntent);
+                                    }
+                                } else {
+                                    try {
+                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((StreamingModel) item).getJsonPackage())));
+                                    } catch (android.content.ActivityNotFoundException anfe) {
+                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((StreamingModel) item).getJsonPackage())));
+                                    }
                                 }
-                            }else{
+                            } else {
                                 try {
-                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((StreamingModel) item).getJsonPackage())));
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((StreamingModel) item).getJsonPackage())));
                                 } catch (android.content.ActivityNotFoundException anfe) {
-                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((StreamingModel) item).getJsonPackage())));
+                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((StreamingModel) item).getJsonPackage())));
                                 }
-                            }
-                        }else{
-                            try {
-                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((StreamingModel) item).getJsonPackage())));
-                            } catch (android.content.ActivityNotFoundException anfe) {
-                                getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((StreamingModel) item).getJsonPackage())));
                             }
                         }
                     }

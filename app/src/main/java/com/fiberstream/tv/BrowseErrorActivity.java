@@ -1,20 +1,11 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
 package com.fiberstream.tv;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
@@ -24,13 +15,16 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
-/*
- * BrowseErrorActivity shows how to use ErrorFragment
- */
+import com.fiberstream.tv.app.MainActivity;
+
+import static com.fiberstream.tv.utils.Utils.BACKGROUND_UPDATE_DELAY;
+
 public class BrowseErrorActivity extends Activity {
     private static final int TIMER_DELAY = 3000;
+    private static final int TIMER_SCREEN = 0;
     private static final int SPINNER_WIDTH = 100;
     private static final int SPINNER_HEIGHT = 100;
+    private final Handler mHandler = new Handler();
 
     private ErrorFragment mErrorFragment;
     private SpinnerFragment mSpinnerFragment;
@@ -43,33 +37,61 @@ public class BrowseErrorActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        testError();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startBackgroundTimer();
+//        testError();
     }
 
     private void testError() {
-        mErrorFragment = new ErrorFragment();
-        getFragmentManager()
-                .beginTransaction()
-                .add(R.id.main_browse_fragment, mErrorFragment)
-                .commit();
+        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if(mWifi.isConnected()) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent home=new Intent(BrowseErrorActivity.this, MainActivity.class);
+                    startActivity(home);
+                    finish();
+                }
+            },TIMER_SCREEN);
+        }else{
+            mErrorFragment = new ErrorFragment();
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.main_browse_fragment, mErrorFragment)
+                    .commit();
 
-        mSpinnerFragment = new SpinnerFragment();
-        getFragmentManager()
-                .beginTransaction()
-                .add(R.id.main_browse_fragment, mSpinnerFragment)
-                .commit();
+            mSpinnerFragment = new SpinnerFragment();
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.main_browse_fragment, mSpinnerFragment)
+                    .commit();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getFragmentManager()
+                            .beginTransaction()
+                            .remove(mSpinnerFragment)
+                            .commit();
+                    mErrorFragment.setErrorContent();
+                }
+            }, TIMER_DELAY);
+        }
+    }
+
+    private void startBackgroundTimer() {
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                getFragmentManager()
-                        .beginTransaction()
-                        .remove(mSpinnerFragment)
-                        .commit();
-                mErrorFragment.setErrorContent();
+                testError();
             }
-        }, TIMER_DELAY);
+        }, TIMER_SCREEN);
     }
 
     public static class SpinnerFragment extends Fragment {

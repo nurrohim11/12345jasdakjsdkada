@@ -1,7 +1,10 @@
 package com.fiberstream.tv.app;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -26,6 +29,8 @@ import androidx.leanback.widget.Row;
 import androidx.leanback.widget.RowPresenter;
 import androidx.leanback.widget.VerticalGridPresenter;
 
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,6 +56,10 @@ import com.fiberstream.tv.app.main.model.SliderModel;
 import com.fiberstream.tv.app.main.presenter.MainPresenterSelector;
 import com.fiberstream.tv.app.main.presenter.SliderPresenter;
 import com.fiberstream.tv.app.search.SearchActivity;
+import com.fiberstream.tv.app.settings.SettingsListRow;
+import com.fiberstream.tv.app.settings.model.SettingModel;
+import com.fiberstream.tv.app.settings.model.SettingRowModel;
+import com.fiberstream.tv.app.settings.presenter.SettingsIconPresenter;
 import com.fiberstream.tv.app.streaming.detail.DetailKategoriActivity;
 import com.fiberstream.tv.app.streaming.detail.DetailKategoriFragment;
 import com.fiberstream.tv.utils.ShadowRowPresenterSelector;
@@ -90,13 +99,15 @@ public class MainFragment extends BrowseFragment {
     private static final long MENU_ID_2 = 2;
     private static final String MENU_NAME_2 = "Categories";
     private static final long MENU_ID_3 = 3;
-    private static final String MENU_NAME_3 = "IP TV";
+    private static final String MENU_NAME_3 = "NOMADEN IP TV";
     private static final long MENU_ID_4 = 4;
-    private static final String MENU_NAME_4 = "Favorite";
+    private static final String MENU_NAME_4 = "Favorites";
     private static final long MENU_ID_5 = 5;
     private static final String MENU_NAME_5 = "Billing";
     private static final long MENU_ID_6 = 6;
     private static final String MENU_NAME_6 = "Inbox";
+    private static final long MENU_ID_7 = 7;
+    private static final String MENU_NAME_7 = "Settings";
     String device_token="";
     SessionManager sessionManager;
 
@@ -264,13 +275,13 @@ public class MainFragment extends BrowseFragment {
         PageRow pageRow1 = new PageRow(headerItem1);
         mRowsAdapter.add(pageRow1);
 
-        HeaderItem headerItem2 = new HeaderItem(MENU_ID_2, MENU_NAME_2);
-        PageRow pageRow2 = new PageRow(headerItem2);
-        mRowsAdapter.add(pageRow2);
-
         HeaderItem headerItem3 = new HeaderItem(MENU_ID_3, MENU_NAME_3);
         PageRow pageRow3 = new PageRow(headerItem3);
         mRowsAdapter.add(pageRow3);
+
+        HeaderItem headerItem2 = new HeaderItem(MENU_ID_2, MENU_NAME_2);
+        PageRow pageRow2 = new PageRow(headerItem2);
+        mRowsAdapter.add(pageRow2);
 
         HeaderItem headerItem4 = new HeaderItem(MENU_ID_4, MENU_NAME_4);
         PageRow pageRow4 = new PageRow(headerItem4);
@@ -283,6 +294,10 @@ public class MainFragment extends BrowseFragment {
         HeaderItem headerItem6 = new HeaderItem(MENU_ID_6, MENU_NAME_6);
         PageRow pageRow6 = new PageRow(headerItem6);
         mRowsAdapter.add(pageRow6);
+
+        HeaderItem headerItem7 = new HeaderItem(MENU_ID_7, MENU_NAME_7);
+        PageRow pageRow7 = new PageRow(headerItem7);
+        mRowsAdapter.add(pageRow7);
     }
 
     private static class MainFragmentFactory extends BrowseFragment.FragmentFactory {
@@ -311,6 +326,12 @@ public class MainFragment extends BrowseFragment {
             }
             else if(row.getHeaderItem().getId() == MENU_ID_6){
                 return new InboxFragment();
+            }
+            else if(row.getHeaderItem().getId() == MENU_ID_7){
+//                Intent intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
+                return new SettingsFragment();
             }
 
             throw new IllegalArgumentException(String.format("Invalid row %s", rowObj));
@@ -681,34 +702,37 @@ public class MainFragment extends BrowseFragment {
                         Object item,
                         RowPresenter.ViewHolder rowViewHolder,
                         Row row) {
-                    if(item instanceof FavoriteModel){
+                    if(item instanceof FavoriteModel) {
                         final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
-
-                        if(installedPackages.contains(((FavoriteModel) item).getJsonPackage())){
-                            Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((FavoriteModel) item).getJsonPackage());
-                            getContext().startActivity( launchIntent );
-                        }else {
-                            if(((FavoriteModel) item).getJsonPackage().isEmpty()){
-                                if(((FavoriteModel) item).getUrlPlaystore().isEmpty()){
-                                    if(((FavoriteModel) item).getUrlWeb().isEmpty()){
-                                        Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
-                                    }else{
-                                        Intent httpIntent = new Intent(Intent.ACTION_VIEW);
-                                        httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
-                                        getContext().startActivity(httpIntent);
+                        if (((FavoriteModel) item).getUrlWeb().equals("0")) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/channel/UCI5F5g_NNcKAQUn7umV9zxA")));
+                        }else{
+                            if (installedPackages.contains(((FavoriteModel) item).getJsonPackage())) {
+                                Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((FavoriteModel) item).getJsonPackage());
+                                getContext().startActivity(launchIntent);
+                            } else {
+                                if (((FavoriteModel) item).getJsonPackage().isEmpty()) {
+                                    if (((FavoriteModel) item).getUrlPlaystore().isEmpty()) {
+                                        if (((FavoriteModel) item).getUrlWeb().isEmpty()) {
+                                            Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Intent httpIntent = new Intent(Intent.ACTION_VIEW);
+                                            httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
+                                            getContext().startActivity(httpIntent);
+                                        }
+                                    } else {
+                                        try {
+                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                        } catch (android.content.ActivityNotFoundException anfe) {
+                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                        }
                                     }
-                                }else{
+                                } else {
                                     try {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((FavoriteModel) item).getJsonPackage())));
+                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                     } catch (android.content.ActivityNotFoundException anfe) {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((FavoriteModel) item).getJsonPackage())));
+                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                     }
-                                }
-                            }else{
-                                try {
-                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+((FavoriteModel) item).getJsonPackage())));
-                                } catch (android.content.ActivityNotFoundException anfe) {
-                                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+((FavoriteModel) item).getJsonPackage())));
                                 }
                             }
                         }
@@ -838,6 +862,83 @@ public class MainFragment extends BrowseFragment {
             super.onResume();
             mWebview.loadUrl("https://fiberstream.id/inbox.php");
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+        }
+    }
+
+
+    public static class SettingsFragment extends RowsFragment {
+        private final ArrayObjectAdapter mRowsAdapter;
+
+        public SettingsFragment() {
+            ListRowPresenter selector = new ListRowPresenter();
+            selector.setNumRows(1);
+            mRowsAdapter = new ArrayObjectAdapter(selector);
+            setAdapter(mRowsAdapter);
+            setOnItemViewClickedListener(new OnItemViewClickedListener() {
+                @Override
+                public void onItemClicked(Presenter.ViewHolder itemViewHolder,
+                                          Object item,
+                                          RowPresenter.ViewHolder rowViewHolder,
+                                          Row row) {
+                    if(item instanceof SettingModel){
+                        SettingModel model = (SettingModel) item;
+                        if(model.getKode().equals("settings")){
+                            Intent intent = new Intent(Settings.ACTION_SETTINGS);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }else if(model.getKode().equals("wifi")){
+                            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }else if(model.getKode().equals("display")){
+                            Intent intentDisplaySetting = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
+                            ResolveInfo resolveInfo = getActivity().getPackageManager().resolveActivity(intentDisplaySetting,0);
+
+                            if(resolveInfo == null){
+                                Toast.makeText(getActivity(),
+                                        "Not Support!",
+                                        Toast.LENGTH_LONG).show();
+                            }else{
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    loadData();
+                }
+            }, 200);
+        }
+
+        private void loadData() {
+            if (isAdded()) {
+                String json = Utils.inputStreamToString(getResources().openRawResource(
+                        R.raw.icon_settings));
+                SettingRowModel cardRow = new Gson().fromJson(json, SettingRowModel.class);
+                mRowsAdapter.add(createCardRow(cardRow));
+                getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+            }
+        }
+
+        private ListRow createCardRow(SettingRowModel cardRow) {
+            SettingsIconPresenter iconCardPresenter = new SettingsIconPresenter(getActivity());
+            ArrayObjectAdapter adapter = new ArrayObjectAdapter(iconCardPresenter);
+            for(SettingModel card : cardRow.getCards()) {
+                adapter.add(card);
+            }
+
+            HeaderItem headerItem = new HeaderItem(cardRow.getTitle());
+            return new SettingsListRow(headerItem, adapter, cardRow);
         }
     }
 

@@ -1,0 +1,17 @@
+{
+  "title": "Settings",
+  "cards": [
+      {
+        "type": "ICON",
+        "title": "Settings",
+        "localImageResource": "ic_settings_settings",
+        "kode": "settings"
+      },
+      {
+        "type": "ICON",
+        "title": "WiFi",
+        "localImageResource": "ic_settings_wifi_3_bar",
+        "kode": "wifi"
+      }
+    ]
+}

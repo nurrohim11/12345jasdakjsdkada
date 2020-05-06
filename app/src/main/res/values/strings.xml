@@ -15,8 +15,8 @@
     <string name="implement_search">Implement your own in-app search.</string>
 
     <!-- Error messages -->
-    <string name="error_fragment_message">An error occurred</string>
-    <string name="dismiss_error">Dismiss</string>
+    <string name="error_fragment_message">Network not available...</string>
+    <string name="dismiss_error">Search Network</string>
 
 
     <string name="card_examples_title">Card Examples</string>
