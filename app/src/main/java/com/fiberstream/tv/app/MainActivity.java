@@ -51,7 +51,8 @@ public class MainActivity extends Activity {
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
-        if(mWifi.isConnected() || mInternet.isConnected() || mBluetooth.isConnected()) {
+        NetworkInfo mEthernet = connManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+        if(mWifi.isConnected() || mInternet.isConnected() || mBluetooth.isConnected() || mEthernet.isConnected()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
