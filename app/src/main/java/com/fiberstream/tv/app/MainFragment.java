@@ -395,13 +395,13 @@ public class MainFragment extends BrowseFragment {
                                 Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
                                 getContext().startActivity( launchIntent );
                             }else{
-                                if (checkPermission()) {
+//                                if (checkPermission()) {
                                     UpdateApp atualizaApp = new UpdateApp();
                                     atualizaApp.setContext(getActivity());
                                     atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
-                                } else {
-                                    requestPermission();
-                                }
+//                                } else {
+//                                    requestPermission();
+//                                }
 //                                Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -542,7 +542,7 @@ public class MainFragment extends BrowseFragment {
                     @Override
                     public void run() {
                         mPDialog = new ProgressDialog(mContext);
-                        mPDialog.setMessage("Please wait...");
+                        mPDialog.setMessage("Downloading NOMADEN IP TV...");
                         mPDialog.setIndeterminate(true);
                         mPDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mPDialog.setCancelable(false);
@@ -762,13 +762,13 @@ public class MainFragment extends BrowseFragment {
                             Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
                             getContext().startActivity( launchIntent );
                         }else{
-                            if (checkPermission()) {
+//                            if (checkPermission()) {
                                 UpdateApp atualizaApp = new UpdateApp();
                                 atualizaApp.setContext(getActivity());
-                                atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
-                            } else {
-                                requestPermission();
-                            }
+                                atualizaApp.execute(ServerURL.get_apk_nomaden);
+//                            } else {
+//                                requestPermission();
+//                            }
 //                            Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -840,7 +840,7 @@ public class MainFragment extends BrowseFragment {
                     if (locationAccepted && cameraAccepted) {
                         UpdateApp updateApp = new UpdateApp();
                         updateApp.setContext(getActivity());
-                        updateApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
+                        updateApp.execute(ServerURL.get_apk_nomaden);
                     }
                 }
             }
@@ -869,7 +869,7 @@ public class MainFragment extends BrowseFragment {
                     @Override
                     public void run() {
                         mPDialog = new ProgressDialog(mContext);
-                        mPDialog.setMessage("Please wait...");
+                        mPDialog.setMessage("Downloading NOMADEN IP TV...");
                         mPDialog.setIndeterminate(true);
                         mPDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mPDialog.setCancelable(false);
