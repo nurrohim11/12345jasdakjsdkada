@@ -146,19 +146,19 @@ public class MainFragment extends BrowseFragment {
     public void onResume() {
         super.onResume();
         startBackgroundTimer();
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-            @Override
-            public void onSuccess(InstanceIdResult instanceIdResult) {
-                device_token = instanceIdResult.getToken();
-                sessionManager.saveFcmId(device_token);
-                Log.d(TAG,">>"+device_token);
-                try {
-                    saveFcmId();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+//            @Override
+//            public void onSuccess(InstanceIdResult instanceIdResult) {
+//                device_token = instanceIdResult.getToken();
+//                sessionManager.saveFcmId(device_token);
+//                Log.d(TAG,">>"+device_token);
+//                try {
+//                    saveFcmId();
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -219,25 +219,7 @@ public class MainFragment extends BrowseFragment {
         mHandler.removeCallbacks(mBackgroundTask);
         mHandler.postDelayed(mBackgroundTask, BACKGROUND_UPDATE_DELAY);
     }
-
-    private void saveFcmId() throws JSONException {
-        JSONObject jBody = new JSONObject();
-        jBody.put("fcm_id",device_token);
-        new ApiVolley(getContext(), jBody, "post", ServerURL.post_fcmid,
-                new AppRequestCallback(new AppRequestCallback.ResponseListener() {
-                    @Override
-                    public void onSuccess(String response, String message) {
-                    }
-                    @Override
-                    public void onEmpty(String message) {
-                    }
-                    @Override
-                    public void onFail(String message) {
-                    }
-                })
-        );
-
-    }
+    
     private void setupUi() {
         setHeadersState(HEADERS_ENABLED);
         setHeadersTransitionOnBackEnabled(true);

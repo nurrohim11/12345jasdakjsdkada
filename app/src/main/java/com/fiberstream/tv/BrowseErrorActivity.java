@@ -49,7 +49,9 @@ public class BrowseErrorActivity extends Activity {
     private void testError() {
         ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if(mWifi.isConnected()) {
+        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
+        if(mWifi.isConnected() || mInternet.isConnected() || mBluetooth.isConnected()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {

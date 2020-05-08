@@ -44,13 +44,14 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
         sessionManager = new SessionManager(this);
-
     }
 
     private void error(){
         ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if(!mWifi.isConnected()) {
+        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
+        if(mWifi.isConnected() || mInternet.isConnected() || mBluetooth.isConnected()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
