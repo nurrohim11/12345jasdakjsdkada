@@ -46,13 +46,30 @@ public class BrowseErrorActivity extends Activity {
 //        testError();
     }
 
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            return false;
+        }
+//        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+//        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+//        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+//        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
+//        NetworkInfo mEthernet = connManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+//        if(!mWifi.isConnected() || !mInternet.isConnected() || !mBluetooth.isConnected() || !mEthernet.isConnected()) {
+//            return false;
+//        } else {
+//            return true;
+//        }
+    }
+
     private void testError() {
-        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
-        NetworkInfo mEthernet = connManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-        if(mWifi.isConnected() || mInternet.isConnected() || mBluetooth.isConnected() || mEthernet.isConnected()) {
+//        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+//        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if(isOnline()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {

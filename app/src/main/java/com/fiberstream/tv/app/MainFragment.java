@@ -162,19 +162,38 @@ public class MainFragment extends BrowseFragment {
     public void onResume() {
         super.onResume();
         startBackgroundTimer();
-//        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-//            @Override
-//            public void onSuccess(InstanceIdResult instanceIdResult) {
-//                device_token = instanceIdResult.getToken();
-//                sessionManager.saveFcmId(device_token);
-//                Log.d(TAG,">>"+device_token);
-//                try {
-//                    saveFcmId();
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+            @Override
+            public void onSuccess(InstanceIdResult instanceIdResult) {
+                device_token = instanceIdResult.getToken();
+                sessionManager.saveFcmId(device_token);
+                Log.d(TAG,"firebase "+device_token);
+                try {
+                    saveFcmId();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void saveFcmId() throws JSONException {
+        JSONObject jBody = new JSONObject();
+        jBody.put("fcm_id",device_token);
+        new ApiVolley(getActivity(), jBody, "post", ServerURL.post_fcmid,
+                new AppRequestCallback(new AppRequestCallback.ResponseListener() {
+                    @Override
+                    public void onSuccess(String response, String message) {
+                    }
+                    @Override
+                    public void onEmpty(String message) {
+                    }
+                    @Override
+                    public void onFail(String message) {
+                    }
+                })
+        );
+
     }
 
     @Override
@@ -340,7 +359,6 @@ public class MainFragment extends BrowseFragment {
     public static class HomeFragment extends RowsFragment {
         private final ArrayObjectAdapter mRowsAdapter;
         private static final String TAG_HOME_FRAGMENT = "HomeFragment";
-        private SessionManager sessionManager;
         private static final int PERMISSION_REQUEST_CODE = 200;
 
         public HomeFragment() {
@@ -414,7 +432,7 @@ public class MainFragment extends BrowseFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            sessionManager = new SessionManager(getActivity());
+//            sessionManager = new SessionManager(getActivity());
             loadSlider();
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
         }

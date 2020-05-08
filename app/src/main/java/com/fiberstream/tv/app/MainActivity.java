@@ -44,51 +44,89 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
         sessionManager = new SessionManager(this);
+    }
 
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            return false;
+        }
+//        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+//        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+//        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+//        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
+//        NetworkInfo mEthernet = connManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+//        if(!mWifi.isConnected() || !mInternet.isConnected() || !mBluetooth.isConnected() || !mEthernet.isConnected()) {
+//            return false;
+//        } else {
+//            return true;
+//        }
     }
 
     private void error(){
-        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if(!mWifi.isConnected()) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
+        Log.d(TAG,String.valueOf(isOnline()));
+        if(!isOnline()) {
+//            if(!mWifi.isConnected() || !mInternet.isConnected() || !mBluetooth.isConnected() || !mEthernet.isConnected()) {
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
                     Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
                     startActivity(home);
                     finish();
-                }
-            },TIMER_SCREEN);
+//                }
+//            },TIMER_SCREEN);
         }
+//        else if(!mBluetooth.isConnected()){
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
+//                    startActivity(home);
+//                    finish();
+//                }
+//            },TIMER_SCREEN);
+//        }else if(!mEthernet.isConnected()){
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
+//                    startActivity(home);
+//                    finish();
+//                }
+//            },TIMER_SCREEN);
+//        }
     }
 
     private void startBackgroundTimer() {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
                 error();
-            }
-        }, TIMER_SCREEN);
+//            }
+//        },TIMER_SCREEN);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         startBackgroundTimer();
-        FirebaseApp.getInstance();
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-            @Override
-            public void onSuccess(InstanceIdResult instanceIdResult) {
-                device_token = instanceIdResult.getToken();
-                sessionManager.saveFcmId(device_token);
-                Log.d(TAG,">>"+device_token);
-                try {
-                    saveFcmId();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        FirebaseApp.getInstance();
+//        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+//            @Override
+//            public void onSuccess(InstanceIdResult instanceIdResult) {
+//                device_token = instanceIdResult.getToken();
+//                sessionManager.saveFcmId(device_token);
+//                Log.d(TAG,">>"+device_token);
+//                try {
+//                    saveFcmId();
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
     private void saveFcmId() throws JSONException {
         JSONObject jBody = new JSONObject();
