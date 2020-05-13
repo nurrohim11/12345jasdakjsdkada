@@ -9,6 +9,7 @@ public class ServerURL {
     private static String home_url ="https://admin.fiberstream.id/";
     public static String get_dashbord_apps = base_url+"main/dashboard";
     public static String get_apk_nomaden = home_url+"apk/nomaden04131.apk";
+    public static String post_device = base_url+"Authentication/process_device";
     public static String get_kategori = base_url+"master/ms_kategori";
     public static String get_konten_streaming = base_url+"master/konten_streaming";
     public static String get_slider =base_url+"master/iklan";

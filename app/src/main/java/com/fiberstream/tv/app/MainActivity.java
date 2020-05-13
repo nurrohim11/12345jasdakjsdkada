@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.R;
+import com.fiberstream.tv.app.settings.model.SettingModel;
 import com.fiberstream.tv.utils.ServerURL;
+import com.fiberstream.tv.utils.Utils;
+import com.google.android.exoplayer2.util.Util;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -43,7 +48,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
+        saveDevice();
         sessionManager = new SessionManager(this);
+    }
+
+    private void saveDevice(){
+        JSONObject jBody = new JSONObject();
+        try {
+            String deviceName = Settings.Global.getString(getContentResolver(), "device_name");
+            int deviceOs = android.os.Build.VERSION.SDK_INT;
+            String model = Settings.Global.getString(getContentResolver(), "model");
+            Log.d(">>>>>>", Utils.deviceName(getApplicationContext()));
+            jBody.put("model_name",deviceName);
+            jBody.put("model_os",deviceOs);
+            jBody.put("model_device",model);
+            jBody.put("model_sn","");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        new ApiVolley(this, jBody, "post", ServerURL.post_device,
+                new AppRequestCallback(new AppRequestCallback.ResponseListener() {
+                    @Override
+                    public void onSuccess(String response, String message) {
+                    }
+                    @Override
+                    public void onEmpty(String message) {
+                    }
+                    @Override
+                    public void onFail(String message) {
+                    }
+                })
+        );
     }
 
     private boolean isOnline() {
@@ -54,59 +89,19 @@ public class MainActivity extends Activity {
         } else {
             return false;
         }
-//        ConnectivityManager connManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-//        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//        NetworkInfo mInternet = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-//        NetworkInfo mBluetooth = connManager.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH);
-//        NetworkInfo mEthernet = connManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-//        if(!mWifi.isConnected() || !mInternet.isConnected() || !mBluetooth.isConnected() || !mEthernet.isConnected()) {
-//            return false;
-//        } else {
-//            return true;
-//        }
     }
 
     private void error(){
         Log.d(TAG,String.valueOf(isOnline()));
         if(!isOnline()) {
-//            if(!mWifi.isConnected() || !mInternet.isConnected() || !mBluetooth.isConnected() || !mEthernet.isConnected()) {
-//            new Handler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
-                    startActivity(home);
-                    finish();
-//                }
-//            },TIMER_SCREEN);
+            Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
+            startActivity(home);
+            finish();
         }
-//        else if(!mBluetooth.isConnected()){
-//            new Handler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
-//                    startActivity(home);
-//                    finish();
-//                }
-//            },TIMER_SCREEN);
-//        }else if(!mEthernet.isConnected()){
-//            new Handler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
-//                    startActivity(home);
-//                    finish();
-//                }
-//            },TIMER_SCREEN);
-//        }
     }
 
     private void startBackgroundTimer() {
-//        mHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-                error();
-//            }
-//        },TIMER_SCREEN);
+        error();
     }
 
     @Override
@@ -127,23 +122,5 @@ public class MainActivity extends Activity {
 //                }
 //            }
 //        });
-    }
-    private void saveFcmId() throws JSONException {
-        JSONObject jBody = new JSONObject();
-        jBody.put("fcm_id",device_token);
-        new ApiVolley(this, jBody, "post", ServerURL.post_fcmid,
-                new AppRequestCallback(new AppRequestCallback.ResponseListener() {
-                    @Override
-                    public void onSuccess(String response, String message) {
-                    }
-                    @Override
-                    public void onEmpty(String message) {
-                    }
-                    @Override
-                    public void onFail(String message) {
-                    }
-                })
-        );
-
     }
 }

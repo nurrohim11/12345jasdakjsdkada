@@ -20,7 +20,7 @@ public class ErrorFragment extends androidx.leanback.app.ErrorFragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        setTitle("Welcome.....");
+//        setTitle("Welcome.....");
     }
 
     void setErrorContent() {

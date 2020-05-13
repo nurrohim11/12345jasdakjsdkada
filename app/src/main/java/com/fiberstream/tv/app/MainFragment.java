@@ -63,6 +63,7 @@ import com.fiberstream.tv.app.main.model.DataRowModel;
 import com.fiberstream.tv.app.main.model.SliderModel;
 import com.fiberstream.tv.app.main.presenter.MainPresenterSelector;
 import com.fiberstream.tv.app.main.presenter.SliderPresenter;
+import com.fiberstream.tv.app.main.presenter.TextPresenter;
 import com.fiberstream.tv.app.search.SearchActivity;
 import com.fiberstream.tv.app.settings.SettingsListRow;
 import com.fiberstream.tv.app.settings.model.SettingModel;
@@ -100,6 +101,7 @@ import java.util.Objects;
 
 import co.id.gmedia.coremodul.ApiVolley;
 import co.id.gmedia.coremodul.AppRequestCallback;
+import co.id.gmedia.coremodul.CustomModel;
 import co.id.gmedia.coremodul.SessionManager;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -121,7 +123,7 @@ public class MainFragment extends BrowseFragment {
     private static final long MENU_ID_5 = 5;
     private static final String MENU_NAME_5 = "Billing";
     private static final long MENU_ID_6 = 6;
-    private static final String MENU_NAME_6 = "Inbox";
+    private static final String MENU_NAME_6 = "Info";
     private static final long MENU_ID_7 = 7;
     private static final String MENU_NAME_7 = "Settings";
     String device_token="";
@@ -180,6 +182,7 @@ public class MainFragment extends BrowseFragment {
     private void saveFcmId() throws JSONException {
         JSONObject jBody = new JSONObject();
         jBody.put("fcm_id",device_token);
+        jBody.put("device",Utils.deviceName(getActivity()));
         new ApiVolley(getActivity(), jBody, "post", ServerURL.post_fcmid,
                 new AppRequestCallback(new AppRequestCallback.ResponseListener() {
                     @Override
@@ -259,7 +262,6 @@ public class MainFragment extends BrowseFragment {
         setHeadersState(HEADERS_ENABLED);
         setHeadersTransitionOnBackEnabled(true);
         setBrandColor(getResources().getColor(R.color.fastlane_background));
-//        setTitle("Fiberstream");
         setBadgeDrawable(getResources().getDrawable(R.drawable.logo_fiber, null));
         // Set search icon color.
         setSearchAffordanceColor(ContextCompat.getColor(getActivity(), R.color.search_opaque));
@@ -360,6 +362,7 @@ public class MainFragment extends BrowseFragment {
         private final ArrayObjectAdapter mRowsAdapter;
         private static final String TAG_HOME_FRAGMENT = "HomeFragment";
         private static final int PERMISSION_REQUEST_CODE = 200;
+        SessionManager sessionManager;
 
         public HomeFragment() {
             mRowsAdapter = new ArrayObjectAdapter(new ShadowRowPresenterSelector());
@@ -432,9 +435,64 @@ public class MainFragment extends BrowseFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-//            sessionManager = new SessionManager(getActivity());
-            loadSlider();
+            sessionManager = new SessionManager(getActivity());
+            loadDetailDevice();
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+        }
+
+
+        private void loadDetailDevice(){
+
+//            TextPresenter textPresenter = new TextPresenter(getActivity());
+//            final ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(textPresenter);
+//            listRowAdapter.add(new CustomModel("0","Nur Rohim"));
+//            HeaderItem header = new HeaderItem(0, "");
+//            mRowsAdapter.add(new ListRow(header, listRowAdapter));
+            JSONObject jBody = new JSONObject();
+            try {
+                jBody.put("fcm_id",sessionManager.getFcmid());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            new ApiVolley(getActivity(), jBody, "post", ServerURL.url_profile_device,
+                    new AppRequestCallback(new AppRequestCallback.ResponseListener() {
+                        @Override
+                        public void onSuccess(String response, String message) {
+
+                            TextPresenter textPresenter = new TextPresenter(getActivity());
+                            final ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(textPresenter);
+                            try {
+                                Log.d(TAG,">> "+response);
+                                JSONObject object = new JSONObject(response);
+                                String nama = object.getString("nama");
+                                String result_nama = nama.substring(0, 1).toUpperCase() + nama.substring(1).toLowerCase();
+                                listRowAdapter.add(new CustomModel("0",result_nama));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            HeaderItem header = new HeaderItem(0, "");
+                            mRowsAdapter.add(new ListRow(header, listRowAdapter));
+                            loadSlider();
+                        }
+                        @Override
+                        public void onEmpty(String message) {
+                            loadSlider();
+                        }
+                        @Override
+                        public void onFail(String message) {
+                            loadSlider();
+                        }
+                    })
+            );
+
+
+
+//            TextPresenter textPresenter = new TextPresenter();
+//            final ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(textPresenter);
+//            listRowAdapter.add(new CustomModel("0","Nur Rohim"));
+//            HeaderItem header = new HeaderItem(0, "");
+//            mRowsAdapter.add(new ListRow(header, listRowAdapter));
         }
 
         private void loadSlider(){
@@ -485,6 +543,11 @@ public class MainFragment extends BrowseFragment {
         private void loadDataDashboard() {
 
             JSONObject obj = new JSONObject();
+            try {
+                obj.put("device",Utils.deviceName(getActivity()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             new ApiVolley(getActivity(), obj, "POST", ServerURL.get_dashbord_apps,
                     new AppRequestCallback(new AppRequestCallback.ResponseListener() {
                         @Override
@@ -1069,6 +1132,11 @@ public class MainFragment extends BrowseFragment {
 
         private void loadData() {
             JSONObject obj = new JSONObject();
+            try {
+                obj.put("device",Utils.deviceName(getActivity()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             new ApiVolley(getActivity(), obj, "POST", ServerURL.get_favorite_streaming,
                     new AppRequestCallback(new AppRequestCallback.ResponseListener() {
                         @Override

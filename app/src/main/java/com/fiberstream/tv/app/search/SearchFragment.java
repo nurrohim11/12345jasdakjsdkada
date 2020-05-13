@@ -179,7 +179,7 @@ public class SearchFragment extends androidx.leanback.app.SearchFragment
 
         JSONObject jBody = new JSONObject();
         try {
-            jBody.put("device","tv");
+            jBody.put("device",Utils.deviceName(getActivity()));
         } catch (JSONException e) {
             e.printStackTrace();
         }

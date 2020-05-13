@@ -24,6 +24,7 @@ import android.graphics.Point;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -165,5 +166,9 @@ public class Utils {
 
         // Return the package name list
         return packageNameList;
+    }
+
+    public static String deviceName(Context context){
+        return String.valueOf(Settings.Global.getString(context.getContentResolver(), "device_name"));
     }
 }

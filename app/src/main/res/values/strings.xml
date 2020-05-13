@@ -17,6 +17,7 @@
     <!-- Error messages -->
     <string name="error_fragment_message">Network not available...</string>
     <string name="dismiss_error">Search Network</string>
+    <string name="please_wait">Please Wait....</string>
 
 
     <string name="card_examples_title">Card Examples</string>

@@ -162,7 +162,7 @@ public class DetailKategoriFragment extends VerticalGridFragment {
     private void loadKontenStreaming(){
         JSONObject obj = new JSONObject();
         try {
-            obj.put("device","tv");
+            obj.put("device",Utils.deviceName(getActivity()));
             obj.put("type","");
             obj.put("kategori",kategoriModel.getId());
         } catch (JSONException e) {
