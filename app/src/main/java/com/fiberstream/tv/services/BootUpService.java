@@ -1,4 +1,4 @@
-package com.fiberstream.tv.utils;
+package com.fiberstream.tv.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,8 +8,9 @@ import android.net.NetworkInfo;
 
 import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.app.MainActivity;
+import com.fiberstream.tv.main.SplashScreenActivity;
 
-public class BootUpReceiver extends BroadcastReceiver {
+public class BootUpService extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {

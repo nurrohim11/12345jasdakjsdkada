@@ -3,9 +3,13 @@ package com.fiberstream.tv.main;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
+import android.widget.Toast;
 
 import com.fiberstream.tv.R;
 import com.fiberstream.tv.app.MainActivity;
@@ -23,6 +27,7 @@ public class SplashScreenActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         homePage();
+//        resetPreferedLauncher();
     }
 
     private void homePage(){
@@ -46,6 +51,16 @@ public class SplashScreenActivity extends Activity {
                 },move_activity);
             }
         }, TIMER_DELAY);
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode){
+            case 4:
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 }

@@ -28,6 +28,7 @@ public class ServerURL {
     public static String get_favorite_streaming = base_url+"streaming/streaming_favorit";
     public static String get_all_konten = base_url+"main/all_konten";
     public static String get_background = home_url+"assets/uploads/bg/bg_fiberstream.jpg";
+    public static String post_service_client = base_url+"Authentication/service_client";
 
     public static final  String getKategori= base_url+"api/item/kategori_item/";
     public static final String url_profile_device = base_url+"authentication/profile_device";

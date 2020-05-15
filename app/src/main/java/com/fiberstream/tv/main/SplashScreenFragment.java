@@ -1,25 +1,14 @@
 package com.fiberstream.tv.main;
 
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
-import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.fragment.app.Fragment;
-import androidx.leanback.app.BrowseFragment;
 
-import android.provider.Settings;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.fiberstream.tv.ErrorFragment;
 import com.fiberstream.tv.R;
 import com.fiberstream.tv.utils.ServerURL;
-import com.fiberstream.tv.utils.Utils;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
@@ -52,6 +41,7 @@ public class SplashScreenFragment extends androidx.leanback.app.ErrorFragment {
                 getProfileDevice();
             }
         });
+
     }
 
     private void getProfileDevice(){
@@ -69,8 +59,10 @@ public class SplashScreenFragment extends androidx.leanback.app.ErrorFragment {
                             Log.d(TAG,">> "+response);
                             JSONObject object = new JSONObject(response);
                             String nama = object.getString("nama");
-                            String result_nama = nama.substring(0, 1).toUpperCase() + nama.substring(1).toLowerCase();
-                            setTitle(result_nama);
+                            if(!nama.equals("")){
+                                String result_nama = nama.substring(0, 1).toUpperCase() + nama.substring(1).toLowerCase();
+                                setTitle(result_nama);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

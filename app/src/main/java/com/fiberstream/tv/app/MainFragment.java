@@ -38,7 +38,6 @@ import androidx.leanback.widget.RowPresenter;
 import androidx.leanback.widget.VerticalGridPresenter;
 
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,7 +46,6 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -70,7 +68,6 @@ import com.fiberstream.tv.app.settings.model.SettingModel;
 import com.fiberstream.tv.app.settings.model.SettingRowModel;
 import com.fiberstream.tv.app.settings.presenter.SettingsIconPresenter;
 import com.fiberstream.tv.app.streaming.detail.DetailKategoriActivity;
-import com.fiberstream.tv.app.streaming.detail.DetailKategoriFragment;
 import com.fiberstream.tv.utils.ShadowRowPresenterSelector;
 import com.fiberstream.tv.app.streaming.model.KategoriModel;
 import com.fiberstream.tv.app.page.GridFragment;
@@ -126,6 +123,8 @@ public class MainFragment extends BrowseFragment {
     private static final String MENU_NAME_6 = "Info";
     private static final long MENU_ID_7 = 7;
     private static final String MENU_NAME_7 = "Settings";
+    private static final long MENU_ID_8 = 8;
+    private static final String MENU_NAME_8 = "Register";
     String device_token="";
     SessionManager sessionManager;
 
@@ -157,8 +156,15 @@ public class MainFragment extends BrowseFragment {
                 new MainFragmentFactory(mBackgroundManager));
         mMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
-    }
 
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            getActivity().startForegroundService(new Intent(getActivity(), LocationClientService.class));
+//        } else {
+//            getActivity().startService(new Intent(getActivity(), LocationClientService.class));
+//        }
+
+    }
 
     @Override
     public void onResume() {
@@ -317,6 +323,10 @@ public class MainFragment extends BrowseFragment {
         HeaderItem headerItem7 = new HeaderItem(MENU_ID_7, MENU_NAME_7);
         PageRow pageRow7 = new PageRow(headerItem7);
         mRowsAdapter.add(pageRow7);
+
+        HeaderItem headerItem8 = new HeaderItem(MENU_ID_8, MENU_NAME_8);
+        PageRow pageRow8 = new PageRow(headerItem8);
+        mRowsAdapter.add(pageRow8);
     }
 
     private static class MainFragmentFactory extends BrowseFragment.FragmentFactory {
@@ -347,11 +357,12 @@ public class MainFragment extends BrowseFragment {
                 return new InboxFragment();
             }
             else if(row.getHeaderItem().getId() == MENU_ID_7){
-//                Intent intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
                 return new SettingsFragment();
             }
+            else if(row.getHeaderItem().getId() == MENU_ID_8){
+                return new RegisterFragment();
+            }
+
 
             throw new IllegalArgumentException(String.format("Invalid row %s", rowObj));
         }
@@ -1259,7 +1270,7 @@ public class MainFragment extends BrowseFragment {
         }
     }
 
-
+    // TODO Setting Fragment
     public static class SettingsFragment extends RowsFragment {
         private final ArrayObjectAdapter mRowsAdapter;
 
@@ -1333,6 +1344,50 @@ public class MainFragment extends BrowseFragment {
 
             HeaderItem headerItem = new HeaderItem(cardRow.getTitle());
             return new SettingsListRow(headerItem, adapter, cardRow);
+        }
+    }
+
+
+    // TODO Register FRAGMENT
+    public static class RegisterFragment extends Fragment implements MainFragmentAdapterProvider {
+        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+        private WebView mWebview;
+        SessionManager sessionManager;
+        private String TAG = "RegisterFragment";
+
+        @Override
+        public MainFragmentAdapter getMainFragmentAdapter() {
+            return mMainFragmentAdapter;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            sessionManager = new SessionManager(getActivity());
+            FrameLayout root = new FrameLayout(getActivity());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT);
+            lp.setMarginStart(32);
+            mWebview = new WebView(getActivity());
+            mWebview.setWebViewClient(new WebViewClient());
+            mWebview.getSettings().setJavaScriptEnabled(true);
+            root.addView(mWebview, lp);
+            return root;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            Log.d(TAG,sessionManager.getFcmid());
+            mWebview.loadUrl("https://fiberstream.net.id/stb/register?fcm_id="+sessionManager.getFcmid());
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
         }
     }
 

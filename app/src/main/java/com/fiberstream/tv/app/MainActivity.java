@@ -1,27 +1,29 @@
 package com.fiberstream.tv.app;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.R;
-import com.fiberstream.tv.app.settings.model.SettingModel;
+import com.fiberstream.tv.app.settings.SettingsActivity;
+import com.fiberstream.tv.services.GpsTracker;
 import com.fiberstream.tv.utils.ServerURL;
 import com.fiberstream.tv.utils.Utils;
-import com.google.android.exoplayer2.util.Util;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +35,7 @@ import co.id.gmedia.coremodul.SessionManager;
 /*
  * Main Activity class that loads {@link MainFragment}.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity  {
     SessionManager sessionManager;
     public static String device_token ="";
     private static final String TAG= "Mainactivity";
@@ -42,15 +44,46 @@ public class MainActivity extends Activity {
     private static final int SPINNER_WIDTH = 100;
     private static final int SPINNER_HEIGHT = 100;
     private final Handler mHandler = new Handler();
+    public static Activity activity;
+    Context mContext;
+    GpsTracker gps;
+    int start =0;
+    int counter =1;
+    double latitude,longitude;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        activity = this;
+        mContext = this;
+
         FirebaseApp.initializeApp(this);
         saveDevice();
+
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+        } else {
+//            Toast.makeText(mContext,"You need have granted permission",Toast.LENGTH_SHORT).show();
+            gps = new GpsTracker(mContext, MainActivity.this);
+
+            // Check if GPS enabled
+            if (gps.canGetLocation()) {
+
+                latitude = gps.getLatitude();
+                longitude = gps.getLongitude();
+            } else {
+                // Can't get location.
+                // GPS or network is not enabled.
+                // Ask user to enable GPS/network in settings.
+                gps.showSettingsAlert();
+            }
+        }
+
         sessionManager = new SessionManager(this);
     }
+
 
     private void saveDevice(){
         JSONObject jBody = new JSONObject();
@@ -93,11 +126,16 @@ public class MainActivity extends Activity {
 
     private void error(){
         Log.d(TAG,String.valueOf(isOnline()));
-        if(!isOnline()) {
-            Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
-            startActivity(home);
-            finish();
-        }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(!isOnline()) {
+                    Intent home=new Intent(MainActivity.this, BrowseErrorActivity.class);
+                    startActivity(home);
+                    finish();
+                }
+            }
+        },3000);
     }
 
     private void startBackgroundTimer() {
@@ -108,19 +146,66 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         startBackgroundTimer();
-//        FirebaseApp.getInstance();
-//        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-//            @Override
-//            public void onSuccess(InstanceIdResult instanceIdResult) {
-//                device_token = instanceIdResult.getToken();
-//                sessionManager.saveFcmId(device_token);
-//                Log.d(TAG,">>"+device_token);
-//                try {
-//                    saveFcmId();
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+
+                    // contacts-related task you need to do.
+
+                    gps = new GpsTracker(mContext, MainActivity.this);
+
+                    // Check if GPS enabled
+                    if (gps.canGetLocation()) {
+
+                        latitude = gps.getLatitude();
+                        longitude = gps.getLongitude();
+                    } else {
+                        // Can't get location.
+                        // GPS or network is not enabled.
+                        // Ask user to enable GPS/network in settings.
+                        gps.showSettingsAlert();
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+//                    Toast.makeText(mContext, "You need to grant permission", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            counterBack();
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_HOME){
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void counterBack(){
+        start+=counter;
+        Log.d(TAG,String.valueOf(start));
+        if(start == 5){
+            Intent intent = new Intent(getBaseContext(),
+                    SettingsActivity.class);
+            start = 0;
+            startActivity(intent);
+        }
     }
 }
