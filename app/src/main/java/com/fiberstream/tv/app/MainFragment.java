@@ -62,6 +62,7 @@ import com.fiberstream.tv.app.main.model.SliderModel;
 import com.fiberstream.tv.app.main.presenter.MainPresenterSelector;
 import com.fiberstream.tv.app.main.presenter.SliderPresenter;
 import com.fiberstream.tv.app.main.presenter.TextPresenter;
+import com.fiberstream.tv.app.register.RegisterActivity;
 import com.fiberstream.tv.app.search.SearchActivity;
 import com.fiberstream.tv.app.settings.SettingsListRow;
 import com.fiberstream.tv.app.settings.model.SettingModel;
@@ -245,7 +246,7 @@ public class MainFragment extends BrowseFragment {
                 .centerCrop()
                 .error(mDefaultBackground);
 
-        Glide.with(getContext())
+        Glide.with(getActivity())
                 .asBitmap()
                 .load(uri)
                 .apply(options)
@@ -324,9 +325,9 @@ public class MainFragment extends BrowseFragment {
         PageRow pageRow7 = new PageRow(headerItem7);
         mRowsAdapter.add(pageRow7);
 
-        HeaderItem headerItem8 = new HeaderItem(MENU_ID_8, MENU_NAME_8);
-        PageRow pageRow8 = new PageRow(headerItem8);
-        mRowsAdapter.add(pageRow8);
+//        HeaderItem headerItem8 = new HeaderItem(MENU_ID_8, MENU_NAME_8);
+//        PageRow pageRow8 = new PageRow(headerItem8);
+//        mRowsAdapter.add(pageRow8);
     }
 
     private static class MainFragmentFactory extends BrowseFragment.FragmentFactory {
@@ -360,7 +361,7 @@ public class MainFragment extends BrowseFragment {
                 return new SettingsFragment();
             }
             else if(row.getHeaderItem().getId() == MENU_ID_8){
-                return new RegisterFragment();
+//                return new RegisterFragment();
             }
 
 
@@ -389,43 +390,44 @@ public class MainFragment extends BrowseFragment {
                     if(item instanceof DataModel){
                         if(((DataModel) item).getFlag().equals("1")){
                             DataModel model = (DataModel) item;
-                            final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                            final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getActivity());
 
                             if(installedPackages.contains(model.getJsonMemberPackage())){
-                                Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getJsonMemberPackage());
-                                getContext().startActivity( launchIntent );
+//                                Toast.makeText(getActivity(), "Installed", Toast.LENGTH_SHORT).show();
+                                Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(model.getJsonMemberPackage());
+                                getActivity().startActivity( launchIntent );
                             }else {
                                 if(model.getJsonMemberPackage().isEmpty()){
                                     if(model.getUrlPlaystore().isEmpty()){
                                         if(model.getUrlWeb().isEmpty()){
-                                            Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
                                         }else{
                                             Intent httpIntent = new Intent(Intent.ACTION_VIEW);
                                             httpIntent.setData(Uri.parse(model.getUrlWeb()));
-                                            getContext().startActivity(httpIntent);
+                                            getActivity().startActivity(httpIntent);
                                         }
                                     }else{
                                         try {
-                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+(model.getJsonMemberPackage()))));
+                                            getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+(model.getJsonMemberPackage()))));
                                         } catch (android.content.ActivityNotFoundException anfe) {
-                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+model.getJsonMemberPackage())));
+                                            getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+model.getJsonMemberPackage())));
                                         }
                                     }
                                 }else{
                                     try {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+model.getJsonMemberPackage())));
+                                        getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+model.getJsonMemberPackage())));
                                     } catch (android.content.ActivityNotFoundException anfe) {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+model.getJsonMemberPackage())));
+                                        getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+model.getJsonMemberPackage())));
                                     }
                                 }
                             }
                         }else{
                             DataModel model = (DataModel) item;
 
-                            final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                            final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getActivity());
                             if(installedPackages.contains(model.getLink())){
-                                Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
-                                getContext().startActivity( launchIntent );
+                                Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(model.getLink());
+                                getActivity().startActivity( launchIntent );
                             }else{
 //                                if (checkPermission()) {
                                     UpdateApp atualizaApp = new UpdateApp();
@@ -451,6 +453,10 @@ public class MainFragment extends BrowseFragment {
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
         }
 
+        @Override
+        public void onResume() {
+            super.onResume();
+        }
 
         private void loadDetailDevice(){
 
@@ -779,7 +785,7 @@ public class MainFragment extends BrowseFragment {
                     if(item instanceof KategoriModel){
                         KategoriModel card = (KategoriModel) item;
                         Gson gson = new Gson();
-                        Intent intent = new Intent(getContext(), DetailKategoriActivity.class);
+                        Intent intent = new Intent(getActivity(), DetailKategoriActivity.class);
                         intent.putExtra("obj", gson.toJson(card));
                         startActivity(intent);
                     }
@@ -849,10 +855,10 @@ public class MainFragment extends BrowseFragment {
                     if(item instanceof ChannelModel){
                         ChannelModel model = (ChannelModel) item;
 
-                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getActivity());
                         if(installedPackages.contains(model.getLink())){
-                            Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(model.getLink());
-                            getContext().startActivity( launchIntent );
+                            Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(model.getLink());
+                            getActivity().startActivity( launchIntent );
                         }else{
 //                            if (checkPermission()) {
                                 UpdateApp atualizaApp = new UpdateApp();
@@ -1103,35 +1109,35 @@ public class MainFragment extends BrowseFragment {
                         RowPresenter.ViewHolder rowViewHolder,
                         Row row) {
                     if(item instanceof FavoriteModel) {
-                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getContext());
+                        final List<String> installedPackages = Utils.getInstalledAppsPackageNameList(getActivity());
                         if (((FavoriteModel) item).getUrlWeb().equals("0")) {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/channel/UCI5F5g_NNcKAQUn7umV9zxA")));
                         }else{
                             if (installedPackages.contains(((FavoriteModel) item).getJsonPackage())) {
-                                Intent launchIntent = getContext().getPackageManager().getLaunchIntentForPackage(((FavoriteModel) item).getJsonPackage());
-                                getContext().startActivity(launchIntent);
+                                Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(((FavoriteModel) item).getJsonPackage());
+                                getActivity().startActivity(launchIntent);
                             } else {
                                 if (((FavoriteModel) item).getJsonPackage().isEmpty()) {
                                     if (((FavoriteModel) item).getUrlPlaystore().isEmpty()) {
                                         if (((FavoriteModel) item).getUrlWeb().isEmpty()) {
-                                            Toast.makeText(getContext(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), "Paket tidak ditemukan !!..", Toast.LENGTH_SHORT).show();
                                         } else {
                                             Intent httpIntent = new Intent(Intent.ACTION_VIEW);
                                             httpIntent.setData(Uri.parse(((FavoriteModel) item).getUrlWeb()));
-                                            getContext().startActivity(httpIntent);
+                                            getActivity().startActivity(httpIntent);
                                         }
                                     } else {
                                         try {
-                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                            getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                         } catch (android.content.ActivityNotFoundException anfe) {
-                                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                            getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                         }
                                     }
                                 } else {
                                     try {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                        getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                     } catch (android.content.ActivityNotFoundException anfe) {
-                                        getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
+                                        getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + ((FavoriteModel) item).getJsonPackage())));
                                     }
                                 }
                             }
@@ -1265,12 +1271,12 @@ public class MainFragment extends BrowseFragment {
         @Override
         public void onResume() {
             super.onResume();
-            mWebview.loadUrl("https://fiberstream.id/inbox.php");
+            mWebview.loadUrl("https://fiberstream.id/stb/info");
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
         }
     }
 
-    // TODO Setting Fragment
+    // TODO SETTINGS FRAGMENT
     public static class SettingsFragment extends RowsFragment {
         private final ArrayObjectAdapter mRowsAdapter;
 
@@ -1349,46 +1355,46 @@ public class MainFragment extends BrowseFragment {
 
 
     // TODO Register FRAGMENT
-    public static class RegisterFragment extends Fragment implements MainFragmentAdapterProvider {
-        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
-        private WebView mWebview;
-        SessionManager sessionManager;
-        private String TAG = "RegisterFragment";
-
-        @Override
-        public MainFragmentAdapter getMainFragmentAdapter() {
-            return mMainFragmentAdapter;
-        }
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
-        }
-
-        @Override
-        public View onCreateView(
-                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            sessionManager = new SessionManager(getActivity());
-            FrameLayout root = new FrameLayout(getActivity());
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT);
-            lp.setMarginStart(32);
-            mWebview = new WebView(getActivity());
-            mWebview.setWebViewClient(new WebViewClient());
-            mWebview.getSettings().setJavaScriptEnabled(true);
-            root.addView(mWebview, lp);
-            return root;
-        }
-
-        @Override
-        public void onResume() {
-            super.onResume();
-            Log.d(TAG,sessionManager.getFcmid());
-            mWebview.loadUrl("https://fiberstream.net.id/stb/register?fcm_id="+sessionManager.getFcmid());
-            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
-        }
-    }
+//    public static class RegisterFragment extends Fragment implements MainFragmentAdapterProvider {
+//        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+//        private WebView mWebview;
+//        SessionManager sessionManager;
+//        private String TAG = "RegisterFragment";
+//
+//        @Override
+//        public MainFragmentAdapter getMainFragmentAdapter() {
+//            return mMainFragmentAdapter;
+//        }
+//
+//        @Override
+//        public void onCreate(Bundle savedInstanceState) {
+//            super.onCreate(savedInstanceState);
+//            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+//        }
+//
+//        @Override
+//        public View onCreateView(
+//                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+//            sessionManager = new SessionManager(getActivity());
+//            FrameLayout root = new FrameLayout(getActivity());
+//            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+//                    FrameLayout.LayoutParams.MATCH_PARENT,
+//                    FrameLayout.LayoutParams.MATCH_PARENT);
+//            lp.setMarginStart(32);
+//            mWebview = new WebView(getActivity());
+//            mWebview.setWebViewClient(new WebViewClient());
+//            mWebview.getSettings().setJavaScriptEnabled(true);
+//            root.addView(mWebview, lp);
+//            return root;
+//        }
+//
+//        @Override
+//        public void onResume() {
+//            super.onResume();
+//            Log.d(TAG,sessionManager.getFcmid());
+//            mWebview.loadUrl("https://fiberstream.net.id/stb/register?fcm_id="+sessionManager.getFcmid());
+//            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+//        }
+//    }
 
 }

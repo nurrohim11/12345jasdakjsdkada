@@ -1,7 +1,10 @@
 package com.fiberstream.tv.app;
 
 import android.Manifest;
+import android.accessibilityservice.AccessibilityService;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,6 +13,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
@@ -19,8 +23,10 @@ import androidx.core.content.ContextCompat;
 
 import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.R;
+import com.fiberstream.tv.app.register.RegisterActivity;
 import com.fiberstream.tv.app.settings.SettingsActivity;
 import com.fiberstream.tv.services.GpsTracker;
+import com.fiberstream.tv.services.MyAccessibilityService;
 import com.fiberstream.tv.utils.ServerURL;
 import com.fiberstream.tv.utils.Utils;
 import com.google.firebase.FirebaseApp;
@@ -36,6 +42,7 @@ import co.id.gmedia.coremodul.SessionManager;
  * Main Activity class that loads {@link MainFragment}.
  */
 public class MainActivity extends Activity  {
+
     SessionManager sessionManager;
     public static String device_token ="";
     private static final String TAG= "Mainactivity";
@@ -57,7 +64,24 @@ public class MainActivity extends Activity  {
         setContentView(R.layout.activity_main);
         activity = this;
         mContext = this;
+        start = 0;
 
+//        if(!checkNotificationEnabled()){
+//            try {
+//                ComponentName name = new ComponentName("com.android.tv.settings",
+//                        "com.android.tv.settings.system.AccessibilityActivity");
+//                Intent i=new Intent(Intent.ACTION_MAIN);
+//                i.addCategory(Intent.CATEGORY_LAUNCHER);
+//                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+//                        Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//                i.setComponent(name);
+//
+//                startActivity(i);
+//
+//            }catch(Exception e){
+//                startActivity(new Intent(Settings.ACTION_SETTINGS));
+//            }
+//        }
         FirebaseApp.initializeApp(this);
         saveDevice();
 
@@ -65,7 +89,6 @@ public class MainActivity extends Activity  {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
         } else {
-//            Toast.makeText(mContext,"You need have granted permission",Toast.LENGTH_SHORT).show();
             gps = new GpsTracker(mContext, MainActivity.this);
 
             // Check if GPS enabled
@@ -193,6 +216,7 @@ public class MainActivity extends Activity  {
             counterBack();
             return true;
         }else if(keyCode == KeyEvent.KEYCODE_HOME){
+            Log.d(TAG,"Keycode home");
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -200,12 +224,36 @@ public class MainActivity extends Activity  {
 
     private void counterBack(){
         start+=counter;
-        Log.d(TAG,String.valueOf(start));
-        if(start == 5){
+        if(start == 10){
             Intent intent = new Intent(getBaseContext(),
-                    SettingsActivity.class);
+                    RegisterActivity.class);
             start = 0;
             startActivity(intent);
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        activityManager.moveTaskToFront(getTaskId(), 0);
+    }
+
+    public boolean checkNotificationEnabled() {
+        try{
+            if(Settings.Secure.getString(getContentResolver(),
+                    "enabled_notification_listeners").contains(getPackageName()))
+            {
+                return true;
+            } else {
+                return false;
+            }
+
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

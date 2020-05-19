@@ -6,6 +6,7 @@ import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.leanback.app.GuidedStepFragment;
 import androidx.leanback.widget.GuidanceStylist;
 import androidx.leanback.widget.GuidedAction;
@@ -16,40 +17,41 @@ import java.util.List;
 
 public class SettingsFragment extends GuidedStepFragment {
 
-    private static final int ACTION_ID_POSITIVE = 1;
-    private static final int ACTION_ID_NEGATIVE = ACTION_ID_POSITIVE + 1;
+    private static final int ACTION_ID_WIFI = 1;
+    private static final int ACTION_ID_SETTING = 2;
 
     @NonNull
     @Override
     public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-        GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(getString(R.string.dialog_example_title),
-                getString(R.string.dialog_example_description),
-                "", null);
-        return guidance;
+//        GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(getString(R.string.dialog_example_title),
+//                getString(R.string.dialog_example_description),
+//                "", null);
+//        return guidance;
+        return new GuidanceStylist.Guidance(getString(R.string.dialog_example_title), "Selected menu settings for setting your android tv and this simple", "", ResourcesCompat.getDrawable(getResources(), R.drawable.logo_fiber, null));
+
     }
 
     @Override
     public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
         GuidedAction action = new GuidedAction.Builder()
-                .id(ACTION_ID_POSITIVE)
-                .title("Wifi").build();
+                .id(ACTION_ID_SETTING)
+                .title("Setting").build();
         actions.add(action);
         action = new GuidedAction.Builder()
-                .id(ACTION_ID_NEGATIVE)
-                .title(getString(R.string.dialog_example_button_negative)).build();
+                .id(ACTION_ID_WIFI)
+                .title("Wifi").build();
         actions.add(action);
     }
 
     @Override
     public void onGuidedActionClicked(GuidedAction action) {
-        if (ACTION_ID_POSITIVE == action.getId()) {
+        if (ACTION_ID_WIFI == action.getId()) {
             Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
             startActivity(intent);
-        } else {
-            Toast.makeText(getActivity(), R.string.dialog_example_button_toast_negative_clicked,
-                    Toast.LENGTH_SHORT).show();
+        } else if(ACTION_ID_SETTING == action.getId()){
+            Intent intent = new Intent(Settings.ACTION_SETTINGS);
+            startActivity(intent);
         }
-        getActivity().finish();
     }
 }
 
