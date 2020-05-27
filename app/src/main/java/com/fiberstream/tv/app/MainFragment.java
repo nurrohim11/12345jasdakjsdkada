@@ -3,13 +3,19 @@ package com.fiberstream.tv.app;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.DhcpInfo;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,6 +44,8 @@ import androidx.leanback.widget.RowPresenter;
 import androidx.leanback.widget.VerticalGridPresenter;
 
 import android.provider.Settings;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -79,6 +87,7 @@ import com.fiberstream.tv.app.tv.model.ChannelRowModel;
 import com.fiberstream.tv.app.tv.presenter.TvPresenterSelector;
 import com.fiberstream.tv.utils.ServerURL;
 import com.fiberstream.tv.utils.Utils;
+import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
@@ -88,11 +97,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -104,6 +119,7 @@ import co.id.gmedia.coremodul.SessionManager;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.content.Context.TELEPHONY_SERVICE;
 import static com.fiberstream.tv.utils.Utils.BACKGROUND_UPDATE_DELAY;
 
 public class MainFragment extends BrowseFragment {
@@ -126,6 +142,8 @@ public class MainFragment extends BrowseFragment {
     private static final String MENU_NAME_7 = "Settings";
     private static final long MENU_ID_8 = 8;
     private static final String MENU_NAME_8 = "Register";
+    private static final long MENU_ID_9 = 9;
+    private static final String MENU_NAME_9 = "Network";
     String device_token="";
     SessionManager sessionManager;
 
@@ -328,6 +346,10 @@ public class MainFragment extends BrowseFragment {
 //        HeaderItem headerItem8 = new HeaderItem(MENU_ID_8, MENU_NAME_8);
 //        PageRow pageRow8 = new PageRow(headerItem8);
 //        mRowsAdapter.add(pageRow8);
+
+        HeaderItem headerItem9 = new HeaderItem(MENU_ID_9, MENU_NAME_9);
+        PageRow pageRow9 = new PageRow(headerItem9);
+        mRowsAdapter.add(pageRow9);
     }
 
     private static class MainFragmentFactory extends BrowseFragment.FragmentFactory {
@@ -361,7 +383,10 @@ public class MainFragment extends BrowseFragment {
                 return new SettingsFragment();
             }
             else if(row.getHeaderItem().getId() == MENU_ID_8){
-//                return new RegisterFragment();
+                return new RegisterFragment();
+            }
+            else if(row.getHeaderItem().getId() == MENU_ID_9){
+                return new NetworkFragment();
             }
 
 
@@ -429,14 +454,9 @@ public class MainFragment extends BrowseFragment {
                                 Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(model.getLink());
                                 getActivity().startActivity( launchIntent );
                             }else{
-//                                if (checkPermission()) {
-                                    UpdateApp atualizaApp = new UpdateApp();
-                                    atualizaApp.setContext(getActivity());
-                                    atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
-//                                } else {
-//                                    requestPermission();
-//                                }
-//                                Toast.makeText(getActivity(), "Maaf, Nomaden tidak tersedia di perangkat anda", Toast.LENGTH_SHORT).show();
+                                UpdateApp atualizaApp = new UpdateApp();
+                                atualizaApp.setContext(getActivity());
+                                atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
                             }
                         }
                     }
@@ -451,6 +471,7 @@ public class MainFragment extends BrowseFragment {
             sessionManager = new SessionManager(getActivity());
             loadDetailDevice();
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+
         }
 
         @Override
@@ -459,12 +480,6 @@ public class MainFragment extends BrowseFragment {
         }
 
         private void loadDetailDevice(){
-
-//            TextPresenter textPresenter = new TextPresenter(getActivity());
-//            final ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(textPresenter);
-//            listRowAdapter.add(new CustomModel("0","Nur Rohim"));
-//            HeaderItem header = new HeaderItem(0, "");
-//            mRowsAdapter.add(new ListRow(header, listRowAdapter));
             JSONObject jBody = new JSONObject();
             try {
                 jBody.put("fcm_id",sessionManager.getFcmid());
@@ -502,14 +517,6 @@ public class MainFragment extends BrowseFragment {
                         }
                     })
             );
-
-
-
-//            TextPresenter textPresenter = new TextPresenter();
-//            final ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(textPresenter);
-//            listRowAdapter.add(new CustomModel("0","Nur Rohim"));
-//            HeaderItem header = new HeaderItem(0, "");
-//            mRowsAdapter.add(new ListRow(header, listRowAdapter));
         }
 
         private void loadSlider(){
@@ -1353,48 +1360,164 @@ public class MainFragment extends BrowseFragment {
         }
     }
 
+    // TODO REGISTER FRAGMENT
+    public static class RegisterFragment extends Fragment implements MainFragmentAdapterProvider {
+        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+        private WebView mWebview;
+        SessionManager sessionManager;
+        private String TAG = "RegisterFragment";
 
-    // TODO Register FRAGMENT
-//    public static class RegisterFragment extends Fragment implements MainFragmentAdapterProvider {
-//        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
-//        private WebView mWebview;
-//        SessionManager sessionManager;
-//        private String TAG = "RegisterFragment";
-//
-//        @Override
-//        public MainFragmentAdapter getMainFragmentAdapter() {
-//            return mMainFragmentAdapter;
-//        }
-//
-//        @Override
-//        public void onCreate(Bundle savedInstanceState) {
-//            super.onCreate(savedInstanceState);
-//            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
-//        }
-//
-//        @Override
-//        public View onCreateView(
-//                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//            sessionManager = new SessionManager(getActivity());
-//            FrameLayout root = new FrameLayout(getActivity());
-//            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-//                    FrameLayout.LayoutParams.MATCH_PARENT,
-//                    FrameLayout.LayoutParams.MATCH_PARENT);
-//            lp.setMarginStart(32);
-//            mWebview = new WebView(getActivity());
-//            mWebview.setWebViewClient(new WebViewClient());
-//            mWebview.getSettings().setJavaScriptEnabled(true);
-//            root.addView(mWebview, lp);
-//            return root;
-//        }
-//
-//        @Override
-//        public void onResume() {
-//            super.onResume();
-//            Log.d(TAG,sessionManager.getFcmid());
-//            mWebview.loadUrl("https://fiberstream.net.id/stb/register?fcm_id="+sessionManager.getFcmid());
-//            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
-//        }
-//    }
+        @Override
+        public MainFragmentAdapter getMainFragmentAdapter() {
+            return mMainFragmentAdapter;
+        }
 
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            sessionManager = new SessionManager(getActivity());
+            FrameLayout root = new FrameLayout(getActivity());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT);
+            lp.setMarginStart(32);
+            mWebview = new WebView(getActivity());
+            mWebview.setWebViewClient(new WebViewClient());
+            mWebview.getSettings().setJavaScriptEnabled(true);
+            root.addView(mWebview, lp);
+            return root;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            Log.d(TAG,sessionManager.getFcmid());
+            mWebview.loadUrl("https://fiberstream.net.id/stb/register?fcm_id="+sessionManager.getFcmid());
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+        }
+    }
+
+    // TODO NETWORK FRAGMENT
+    public static class NetworkFragment extends Fragment implements MainFragmentAdapterProvider {
+        private MainFragmentAdapter mMainFragmentAdapter = new MainFragmentAdapter(this);
+        private WebView mWebview;
+        SessionManager sessionManager;
+        private String TAG = "NetworkFragment";
+
+        @Override
+        public MainFragmentAdapter getMainFragmentAdapter() {
+            return mMainFragmentAdapter;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getMainFragmentAdapter().getFragmentHost().showTitleView(false);
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            sessionManager = new SessionManager(getActivity());
+            FrameLayout root = new FrameLayout(getActivity());
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT);
+            lp.setMarginStart(32);
+            mWebview = new WebView(getActivity());
+            mWebview.setWebViewClient(new WebViewClient());
+            mWebview.getSettings().setJavaScriptEnabled(true);
+            root.addView(mWebview, lp);
+            return root;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            // get ip address
+            String ip_address = Utils.getIPAddress(true);
+
+            // get strength wifi
+            String wifi_signal ="";
+            ConnectivityManager cm = (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            if(activeNetwork != null) {
+                if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+
+                    WifiManager wifiManager = (WifiManager)getActivity().getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                    int level = wifiInfo.getRssi();
+                    if (level <= 0 && level >= -50) {
+                        //Best signal
+                        Log.d(TAG,"Best signal");
+                        wifi_signal = "Excellent ("+level+")";
+                    } else if (level < -50 && level >= -65) {
+                        //Good signal
+                        Log.d(TAG,"Good signal");
+                        wifi_signal = "Good ("+level+")";
+                    } else if (level < -65) {
+                        //Low signal
+                        Log.d(TAG, "Weak");
+                        wifi_signal = "Weak ("+level+")";
+                    }
+                } else {
+                    wifi_signal = "Not Available";
+                }
+            }
+
+            // ping ke google.com
+            String ping_google = Utils.runSystemCommand("ping google.com");
+            String[] log_ping = ping_google.split("=");
+            String status_ping_google="";
+            if(log_ping[1].equals("1 ttl")){
+                status_ping_google ="Normal ("+log_ping[3]+")";
+            }else{
+                status_ping_google = "Fail";
+            }
+
+            // ping ke ip gateway
+            String ping_gateway = Utils.runSystemCommand("ping "+getIpGateway());
+            String[] log_ping_gateway = ping_gateway.split("=");
+            String status_ping_gateway="";
+            if(log_ping_gateway[1].equals("1 ttl")){
+                status_ping_gateway ="Normal ("+log_ping_gateway[3]+")";
+            }else{
+                status_ping_gateway = "Fail";
+            }
+
+            getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
+//            mWebview.loadUrl("http://192.168.15.89/gmedia/fiberstream/api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google);
+            mWebview.loadUrl("http://192.168.15.89/gmedia/fiberstream/api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google+"&ping_gateway="+status_ping_gateway);
+        }
+
+        private String getIpGateway(){
+            ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Service.CONNECTIVITY_SERVICE);
+
+            Log.i("myNetworkType: ", connectivityManager.getActiveNetworkInfo().getTypeName());
+            WifiManager wifiManager= (WifiManager) getActivity().getSystemService(getActivity().WIFI_SERVICE);
+            String ip = "";
+            if(connectivityManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI) {
+                Log.i(TAG, "myType wifi");
+                Log.i(TAG, "info" +ip);
+                DhcpInfo d =wifiManager.getDhcpInfo();
+                ip = String.valueOf(Utils.intToInet(d.gateway)).replace("/","");
+            }else if(connectivityManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_ETHERNET){
+                Log.i(TAG, "ethernet");
+                Log.i(TAG, "routes "+connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString());
+                ip = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString();
+            }else{
+                Log.i(TAG, "other");
+                String[] ip_gateway = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString().split(" ");
+                ip = ip_gateway[2];
+            }
+            return ip;
+        }
+    }
 }

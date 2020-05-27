@@ -14,6 +14,7 @@
 
 package com.fiberstream.tv.utils;
 
+import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,16 +23,31 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
 import android.media.MediaMetadataRetriever;
+import android.net.ConnectivityManager;
+import android.net.DhcpInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
@@ -40,6 +56,8 @@ import java.util.List;
  */
 public class Utils {
 
+    static DhcpInfo d;
+    static String str_temp;
     /*
      * Making sure public utility methods remain static
      */
@@ -171,4 +189,80 @@ public class Utils {
     public static String deviceName(Context context){
         return String.valueOf(Settings.Global.getString(context.getContentResolver(), "device_name"));
     }
+
+    public static String getIPAddress(boolean useIPv4) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        String sAddr = addr.getHostAddress();
+                        boolean isIPv4 = sAddr.indexOf(':')<0;
+                        if (useIPv4) {
+                            if (isIPv4)
+                                return sAddr;
+                        } else {
+                            if (!isIPv4) {
+                                int delim = sAddr.indexOf('%'); // drop ip6 zone suffix
+                                return delim<0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) { } // for now eat exceptions
+        return "";
+    }
+
+    public static byte byteOfInt(int value, int which) {
+        int shift = which * 8;
+        return (byte)(value >> shift);
+    }
+
+    public static InetAddress intToInet(int value) {
+        byte[] bytes = new byte[4];
+        for(int i = 0; i<4; i++) {
+            bytes[i] = byteOfInt(value, i);
+        }
+        try {
+            return InetAddress.getByAddress(bytes);
+        } catch (UnknownHostException e) {
+            // This only happens if the byte array has a bad length
+            return null;
+        }
+    }
+
+    public static void sendPingRequest(String ipAddress)
+            throws UnknownHostException, IOException
+    {
+        InetAddress geek = InetAddress.getByName(ipAddress);
+        System.out.println("Sending Ping Request to " + ipAddress);
+        if (geek.isReachable(5000)) {
+            Log.d("Network Fragment", geek.toString());
+            System.out.println("Host is reachable");
+        }else {
+            System.out.println("Sorry ! We can't reach to this host");
+        }
+    }
+
+    public static String runSystemCommand(String command) {
+
+        String s = "";
+
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            BufferedReader inputStream = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+
+            for (int i=0; i<2; i++){
+                s = inputStream.readLine();
+                Log.d("NetworkFragment",s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  s;
+    }
+
 }

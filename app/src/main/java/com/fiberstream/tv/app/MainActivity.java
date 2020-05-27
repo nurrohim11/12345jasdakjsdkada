@@ -168,6 +168,7 @@ public class MainActivity extends Activity  {
     @Override
     protected void onResume() {
         super.onResume();
+        counter = 0;
         startBackgroundTimer();
     }
 
@@ -235,25 +236,6 @@ public class MainActivity extends Activity  {
     @Override
     protected void onPause() {
         super.onPause();
-        ActivityManager activityManager = (ActivityManager) getApplicationContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        activityManager.moveTaskToFront(getTaskId(), 0);
-    }
-
-    public boolean checkNotificationEnabled() {
-        try{
-            if(Settings.Secure.getString(getContentResolver(),
-                    "enabled_notification_listeners").contains(getPackageName()))
-            {
-                return true;
-            } else {
-                return false;
-            }
-
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
 }
