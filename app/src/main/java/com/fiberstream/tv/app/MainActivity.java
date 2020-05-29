@@ -68,23 +68,8 @@ public class MainActivity extends Activity  {
         activity = this;
         mContext = this;
         start = 0;
+        s= 0;
 
-//        if(!checkNotificationEnabled()){
-//            try {
-//                ComponentName name = new ComponentName("com.android.tv.settings",
-//                        "com.android.tv.settings.system.AccessibilityActivity");
-//                Intent i=new Intent(Intent.ACTION_MAIN);
-//                i.addCategory(Intent.CATEGORY_LAUNCHER);
-//                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-//                        Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-//                i.setComponent(name);
-//
-//                startActivity(i);
-//
-//            }catch(Exception e){
-//                startActivity(new Intent(Settings.ACTION_SETTINGS));
-//            }
-//        }
         FirebaseApp.initializeApp(this);
         saveDevice();
 
@@ -224,6 +209,12 @@ public class MainActivity extends Activity  {
             return true;
         }else if(keyCode == 20){
             counterAppsDrawer();
+        }else if (keyCode == 19){
+            s = 0;
+        }else if(keyCode == 22){
+            s = 0;
+        }else if(keyCode == 21){
+            s = 0;
         }
         return super.onKeyDown(keyCode, event);
     }
