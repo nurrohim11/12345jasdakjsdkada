@@ -33,54 +33,41 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".app.register.RegisterActivity"
-            android:screenOrientation="landscape">
-        </activity>
-
+        <activity android:name=".app.apps.AppsActivity"
+            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".app.register.RegisterActivity"
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".main.SplashScreenActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"></activity>
+        <activity
+            android:name=".app.MainActivity"
+            android:screenOrientation="landscape"></activity>
 
-        </activity>
-
-        <activity android:name=".app.MainActivity"
-            android:screenOrientation="landscape">
-
-        </activity>
+        <activity-alias
+            android:name=".main.SplashScreenActivity"
+            android:banner="@drawable/ic_banner"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:targetActivity=".app.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".app.search.SearchActivity"
             android:screenOrientation="landscape" />
-
         <activity
             android:name=".app.streaming.detail.DetailKategoriActivity"
             android:screenOrientation="landscape" />
-
-        <activity-alias
-            android:name=".main.SplashScreenActivity"
-            android:targetActivity=".app.MainActivity"
-            android:banner="@drawable/ic_banner"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        
         <activity
             android:name=".BrowseErrorActivity"
-            android:screenOrientation="landscape">
-            
-        </activity>
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".app.settings.SettingsActivity"
             android:exported="true"

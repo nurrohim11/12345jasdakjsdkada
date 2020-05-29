@@ -86,6 +86,7 @@ public class DetailKategoriFragment extends VerticalGridFragment {
         startBackgroundTimer();
                 setTitle(kategoriModel.getNama()+" Category");
         setupRowAdapter();
+
         setOnItemViewClickedListener(new OnItemViewClickedListener() {
             @Override
             public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
@@ -156,7 +157,7 @@ public class DetailKategoriFragment extends VerticalGridFragment {
                 loadKontenStreaming();
                 startEntranceTransition();
             }
-        }, 1000);
+        }, 100);
     }
 
     private void loadKontenStreaming(){

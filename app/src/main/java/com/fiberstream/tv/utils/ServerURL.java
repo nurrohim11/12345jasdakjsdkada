@@ -6,7 +6,7 @@ package com.fiberstream.tv.utils;
 
 public class ServerURL {
     private static String base_url ="https://admin.fiberstream.id/api/";
-    private static String home_url ="https://admin.fiberstream.id/";
+    public static String home_url ="https://admin.fiberstream.id/";
     public static String get_dashbord = base_url+"main/dashboard";
     public static String get_dashbord_apps = base_url+"main/dashboard_apps";
     public static String get_apk_nomaden = home_url+"apk/nomaden04131.apk";

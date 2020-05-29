@@ -61,6 +61,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.fiberstream.tv.R;
+import com.fiberstream.tv.app.apps.AppsActivity;
 import com.fiberstream.tv.app.favorite.model.FavoriteModel;
 import com.fiberstream.tv.app.favorite.presenter.FavoritePresenterSelector;
 import com.fiberstream.tv.app.main.MainListRows;
@@ -175,14 +176,6 @@ public class MainFragment extends BrowseFragment {
                 new MainFragmentFactory(mBackgroundManager));
         mMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
-
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            getActivity().startForegroundService(new Intent(getActivity(), LocationClientService.class));
-//        } else {
-//            getActivity().startService(new Intent(getActivity(), LocationClientService.class));
-//        }
-
     }
 
     @Override
@@ -459,6 +452,8 @@ public class MainFragment extends BrowseFragment {
                                 atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
                             }
                         }
+                    }else if(item instanceof SliderModel){
+                        getActivity().startActivity(new Intent(getActivity(), AppsActivity.class));
                     }
                 }
             });
@@ -1450,22 +1445,21 @@ public class MainFragment extends BrowseFragment {
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             if(activeNetwork != null) {
                 if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-
                     WifiManager wifiManager = (WifiManager)getActivity().getSystemService(Context.WIFI_SERVICE);
                     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                     int level = wifiInfo.getRssi();
                     if (level <= 0 && level >= -50) {
                         //Best signal
                         Log.d(TAG,"Best signal");
-                        wifi_signal = "Excellent ("+level+")";
+                        wifi_signal = "Excellent ("+level+" dBm)";
                     } else if (level < -50 && level >= -65) {
                         //Good signal
                         Log.d(TAG,"Good signal");
-                        wifi_signal = "Good ("+level+")";
+                        wifi_signal = "Good ("+level+" dBm)";
                     } else if (level < -65) {
                         //Low signal
                         Log.d(TAG, "Weak");
-                        wifi_signal = "Weak ("+level+")";
+                        wifi_signal = "Weak ("+level+" dBm)";
                     }
                 } else {
                     wifi_signal = "Not Available";
@@ -1494,7 +1488,7 @@ public class MainFragment extends BrowseFragment {
 
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
 //            mWebview.loadUrl("http://192.168.15.89/gmedia/fiberstream/api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google);
-            mWebview.loadUrl("http://192.168.15.89/gmedia/fiberstream/api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google+"&ping_gateway="+status_ping_gateway);
+            mWebview.loadUrl(ServerURL.home_url+"api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google+"&ping_gateway="+status_ping_gateway);
         }
 
         private String getIpGateway(){

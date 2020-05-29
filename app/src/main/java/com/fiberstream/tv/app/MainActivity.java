@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 
 import com.fiberstream.tv.BrowseErrorActivity;
 import com.fiberstream.tv.R;
+import com.fiberstream.tv.app.apps.AppsActivity;
 import com.fiberstream.tv.app.register.RegisterActivity;
 import com.fiberstream.tv.app.settings.SettingsActivity;
 import com.fiberstream.tv.services.GpsTracker;
@@ -57,6 +58,8 @@ public class MainActivity extends Activity  {
     int start =0;
     int counter =1;
     double latitude,longitude;
+    int s =0;
+    int c =1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -219,8 +222,21 @@ public class MainActivity extends Activity  {
         }else if(keyCode == KeyEvent.KEYCODE_HOME){
             Log.d(TAG,"Keycode home");
             return true;
+        }else if(keyCode == 20){
+            counterAppsDrawer();
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void counterAppsDrawer(){
+        s+=c;
+        if(s == 10){
+            Log.d(TAG, String.valueOf(s));
+            Intent intent = new Intent(getBaseContext(),
+                    AppsActivity.class);
+            s = 0;
+            startActivity(intent);
+        }
     }
 
     private void counterBack(){

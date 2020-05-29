@@ -233,19 +233,6 @@ public class Utils {
         }
     }
 
-    public static void sendPingRequest(String ipAddress)
-            throws UnknownHostException, IOException
-    {
-        InetAddress geek = InetAddress.getByName(ipAddress);
-        System.out.println("Sending Ping Request to " + ipAddress);
-        if (geek.isReachable(5000)) {
-            Log.d("Network Fragment", geek.toString());
-            System.out.println("Host is reachable");
-        }else {
-            System.out.println("Sorry ! We can't reach to this host");
-        }
-    }
-
     public static String runSystemCommand(String command) {
 
         String s = "";
