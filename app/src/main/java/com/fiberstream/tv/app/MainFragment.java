@@ -1,5 +1,6 @@
 package com.fiberstream.tv.app;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -452,9 +453,10 @@ public class MainFragment extends BrowseFragment {
                                 atualizaApp.execute("https://admin.fiberstream.id/apk/nomaden04131.apk");
                             }
                         }
-                    }else if(item instanceof SliderModel){
-                        getActivity().startActivity(new Intent(getActivity(), AppsActivity.class));
                     }
+//                    else if(item instanceof SliderModel){
+//                        getActivity().startActivity(new Intent(getActivity(), AppsActivity.class));
+//                    }
                 }
             });
         }
@@ -1416,6 +1418,7 @@ public class MainFragment extends BrowseFragment {
             getMainFragmentAdapter().getFragmentHost().showTitleView(false);
         }
 
+        @SuppressLint("SetJavaScriptEnabled")
         @Override
         public View onCreateView(
                 LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -1445,6 +1448,7 @@ public class MainFragment extends BrowseFragment {
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             if(activeNetwork != null) {
                 if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                    @SuppressLint("WifiManagerLeak")
                     WifiManager wifiManager = (WifiManager)getActivity().getSystemService(Context.WIFI_SERVICE);
                     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                     int level = wifiInfo.getRssi();
@@ -1487,7 +1491,6 @@ public class MainFragment extends BrowseFragment {
             }
 
             getMainFragmentAdapter().getFragmentHost().notifyDataReady(getMainFragmentAdapter());
-//            mWebview.loadUrl("http://192.168.15.89/gmedia/fiberstream/api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google);
             mWebview.loadUrl(ServerURL.home_url+"api/main/network?ip="+ip_address+"&wifi_signal="+wifi_signal+"&ping_google="+status_ping_google+"&ping_gateway="+status_ping_gateway);
         }
 
@@ -1495,6 +1498,7 @@ public class MainFragment extends BrowseFragment {
             ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Service.CONNECTIVITY_SERVICE);
 
             Log.i("myNetworkType: ", connectivityManager.getActiveNetworkInfo().getTypeName());
+            @SuppressLint("WifiManagerLeak")
             WifiManager wifiManager= (WifiManager) getActivity().getSystemService(getActivity().WIFI_SERVICE);
             String ip = "";
             if(connectivityManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI) {
@@ -1504,7 +1508,6 @@ public class MainFragment extends BrowseFragment {
                 ip = String.valueOf(Utils.intToInet(d.gateway)).replace("/","");
             }else if(connectivityManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_ETHERNET){
                 Log.i(TAG, "ethernet");
-                Log.i(TAG, "routes "+connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString());
                 ip = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString();
             }else{
                 Log.i(TAG, "other");

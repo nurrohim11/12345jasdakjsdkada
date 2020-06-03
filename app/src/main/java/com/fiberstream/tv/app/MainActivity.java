@@ -156,7 +156,8 @@ public class MainActivity extends Activity  {
     @Override
     protected void onResume() {
         super.onResume();
-        counter = 0;
+        counter = 1;
+        c = 1;
         startBackgroundTimer();
     }
 
@@ -219,6 +220,17 @@ public class MainActivity extends Activity  {
         return super.onKeyDown(keyCode, event);
     }
 
+    private void counterBack(){
+        start+=counter;
+        Log.d(TAG,"start "+String.valueOf(start));
+        if(start == 10){
+            Intent intent = new Intent(getBaseContext(),
+                    RegisterActivity.class);
+            start = 0;
+            startActivity(intent);
+        }
+    }
+
     private void counterAppsDrawer(){
         s+=c;
         if(s == 10){
@@ -226,16 +238,6 @@ public class MainActivity extends Activity  {
             Intent intent = new Intent(getBaseContext(),
                     AppsActivity.class);
             s = 0;
-            startActivity(intent);
-        }
-    }
-
-    private void counterBack(){
-        start+=counter;
-        if(start == 10){
-            Intent intent = new Intent(getBaseContext(),
-                    RegisterActivity.class);
-            start = 0;
             startActivity(intent);
         }
     }

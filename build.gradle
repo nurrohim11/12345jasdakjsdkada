@@ -5,14 +5,18 @@ buildscript {
     repositories {
         google()
         jcenter()
-        
+//        maven {
+//            url 'https://maven.fabric.io/public'
+//        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
         classpath 'com.google.gms:google-services:4.3.3'
+        //classpath 'io.fabric.tools:gradle:1.31.2'
 
-
-        // NOTE: Do not place your application dependencies here; they belong
+        // Add the Crashlytics Gradle plugin.
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.1.1'
+        // Add the Crashlytics Gradle plugin.
         // in the individual module build.gradle files
     }
 }
@@ -21,20 +25,9 @@ allprojects {
     repositories {
         google()
         jcenter()
-        
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    buildToolsVersion = "28.0.3"
-    supportLibVersion = "28.0.0"
-    runnerVersion = "1.0.1"
-    rulesVersion = "1.0.1"
-    espressoVersion = "3.0.1"
-    archLifecycleVersion = "1.0.0"
-    archRoomVersion = "1.0.0"
 }
