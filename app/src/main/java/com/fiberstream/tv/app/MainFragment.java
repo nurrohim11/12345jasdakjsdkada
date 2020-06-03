@@ -1508,7 +1508,9 @@ public class MainFragment extends BrowseFragment {
                 ip = String.valueOf(Utils.intToInet(d.gateway)).replace("/","");
             }else if(connectivityManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_ETHERNET){
                 Log.i(TAG, "ethernet");
-                ip = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString();
+//                ip = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString();
+                String[] ip_gateway = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString().split(" ");
+                ip = ip_gateway[2];
             }else{
                 Log.i(TAG, "other");
                 String[] ip_gateway = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork()).getRoutes().toString().split(" ");
